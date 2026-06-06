@@ -60,9 +60,17 @@ spring:
   # one of the others for `spring.ai.model.embedding`.
   # ---------------------------------------------------------------------------
   ai:
+    # Defaults to a dependency-free MOCK so the app runs with NO API key and NO
+    # local model server (mock chat via ChatModelRouter + MockEmbeddingModel).
+    #   * chat:      mock | openai | anthropic | google-genai | ollama
+    #               (also selectable per-request from the UI — Ollama can take
+    #                any pulled model, e.g. gemma2:9b)
+    #   * embedding: none (-> mock) | openai | google-genai | ollama
+    # Set AI_CHAT_PROVIDER / AI_EMBEDDING_PROVIDER (+ the matching key) to use a
+    # real provider as the server default.
     model:
-      chat: ${AI_CHAT_PROVIDER:openai}          # openai | anthropic | google-genai | ollama
-      embedding: ${AI_EMBEDDING_PROVIDER:openai} # openai | google-genai | ollama (not anthropic)
+      chat: ${AI_CHAT_PROVIDER:mock}
+      embedding: ${AI_EMBEDDING_PROVIDER:none}
 
     openai:
       api-key: ${OPENAI_API_KEY:}

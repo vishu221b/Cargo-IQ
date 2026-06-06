@@ -4,6 +4,7 @@ import io.cargoiq.domain.exception.DocumentNotFoundException;
 import io.cargoiq.domain.exception.HsCodeNotFoundException;
 import io.cargoiq.domain.exception.IncotermNotFoundException;
 import io.cargoiq.domain.exception.InvalidCredentialsException;
+import io.cargoiq.domain.exception.ModelUnavailableException;
 import io.cargoiq.domain.exception.UsernameAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ProblemDetail unauthorized(InvalidCredentialsException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(ModelUnavailableException.class)
+    public ProblemDetail modelUnavailable(ModelUnavailableException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

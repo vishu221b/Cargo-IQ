@@ -4,17 +4,21 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A user question, plus optional retrieval filters.
+ * A user question, plus optional retrieval filters and a chat-model choice.
  *
- * <p>{@code topK} is the number of chunks to retrieve before LLM synthesis.
- * Defaults to 6 — high enough for context, low enough to keep prompt cost
- * sane. Tune per use case.
+ * <p>{@code topK} is the number of chunks to retrieve before synthesis. Defaults
+ * to 6 — high enough for context, low enough to keep prompt cost sane.
+ *
+ * <p>{@code chat} selects which model answers the query (per request). It is
+ * nullable; the four-arg constructor and {@link #of} leave it unset, which the
+ * answering service treats as {@link ModelChoice#mock()}.
  */
 public record Query(
         String text,
         int topK,
         Optional<DocumentType> filterByType,
-        Optional<Incoterm> filterByIncoterm) {
+        Optional<Incoterm> filterByIncoterm,
+        ModelChoice chat) {
 
     public Query {
         Objects.requireNonNull(text, "text");
@@ -28,7 +32,19 @@ public record Query(
         filterByIncoterm = filterByIncoterm == null ? Optional.empty() : filterByIncoterm;
     }
 
+    /** Backward-compatible constructor for callers that don't pick a model. */
+    public Query(String text, int topK,
+                 Optional<DocumentType> filterByType,
+                 Optional<Incoterm> filterByIncoterm) {
+        this(text, topK, filterByType, filterByIncoterm, null);
+    }
+
     public static Query of(String text) {
-        return new Query(text, 6, Optional.empty(), Optional.empty());
+        return new Query(text, 6, Optional.empty(), Optional.empty(), null);
+    }
+
+    /** The model choice, defaulting to the dependency-free mock when unset. */
+    public ModelChoice chatOrMock() {
+        return chat != null ? chat : ModelChoice.mock();
     }
 }

@@ -86,7 +86,7 @@ public class AnswerQueryService implements AnswerQueryUseCase {
                     List.of());
         }
 
-        String answerText = chatModel.generateGrounded(query.text(), citations);
+        String answerText = chatModel.generateGrounded(query.text(), citations, query.chatOrMock());
         return new Answer(answerText, citations);
     }
 }

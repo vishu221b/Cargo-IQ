@@ -1,6 +1,7 @@
 package io.cargoiq.application.port.out;
 
 import io.cargoiq.domain.model.Citation;
+import io.cargoiq.domain.model.ModelChoice;
 
 import java.util.List;
 
@@ -16,10 +17,19 @@ import java.util.List;
  * <ul>
  *   <li>unit-test {@code AnswerQueryService} with a fake ChatModelPort;</li>
  *   <li>swap OpenAI → Anthropic → Ollama via configuration only;</li>
+ *   <li>let the caller pick a provider/model per request (see {@link ModelChoice});</li>
  *   <li>evolve the prompt strategy without touching controllers or MCP tools.</li>
  * </ul>
  */
 public interface ChatModelPort {
 
-    String generateGrounded(String userQuery, List<Citation> context);
+    /**
+     * Generate a grounded answer.
+     *
+     * @param userQuery the question
+     * @param context   retrieved citations to ground on
+     * @param choice    which model to use; the adapter falls back to a
+     *                  dependency-free mock when the choice is unavailable
+     */
+    String generateGrounded(String userQuery, List<Citation> context, ModelChoice choice);
 }

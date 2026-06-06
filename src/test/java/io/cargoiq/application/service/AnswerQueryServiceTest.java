@@ -73,11 +73,11 @@ class AnswerQueryServiceTest {
     }
 
     private static ChatModelPort chatReturning(String reply) {
-        return (q, ctx) -> reply;
+        return (q, ctx, choice) -> reply;
     }
 
     private static ChatModelPort chatThatShouldNotBeCalled() {
-        return (q, ctx) -> {
+        return (q, ctx, choice) -> {
             throw new AssertionError("ChatModelPort should not be called when no citations");
         };
     }

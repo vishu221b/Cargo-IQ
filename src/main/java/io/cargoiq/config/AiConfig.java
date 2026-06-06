@@ -1,28 +1,35 @@
 package io.cargoiq.config;
 
+import io.cargoiq.adapter.out.ai.MockEmbeddingModel;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * AI-related configuration.
  *
- * <p>Intentionally minimal. Spring AI's auto-configuration (driven by the
- * {@code spring-ai-starter-model-openai} and
- * {@code spring-ai-starter-vector-store-pgvector} starters in {@code pom.xml})
- * produces the following beans for us:
+ * <p>The vector store, MCP server, and (optionally) a real chat/embedding model
+ * are produced by Spring AI auto-configuration driven by {@code application.yml}
+ * — see {@code spring.ai.model.chat} / {@code spring.ai.model.embedding}.
  *
- * <ul>
- *   <li>{@code ChatModel}            — backed by {@code OpenAiChatModel}</li>
- *   <li>{@code EmbeddingModel}       — backed by {@code OpenAiEmbeddingModel}</li>
- *   <li>{@code VectorStore}          — backed by {@code PgVectorStore}</li>
- *   <li>{@code ChatClient.Builder}   — for {@link io.cargoiq.adapter.out.ai.SpringAiChatModelAdapter}</li>
- * </ul>
+ * <p>The one bean defined here is the fallback {@link MockEmbeddingModel}: when
+ * no real embedding provider is selected (the default, so the app runs with no
+ * API key), it satisfies the {@code EmbeddingModel} dependency of the pgvector
+ * store with deterministic, lexically-meaningful vectors. {@code @ConditionalOnMissingBean}
+ * means a configured provider (OpenAI/Ollama/Gemini) transparently replaces it.
  *
- * <p>All driven by properties in {@code application.yml}. To swap to Anthropic
- * or Ollama, change the starter dependency and the relevant properties —
- * nothing in this file changes.
+ * <p>The chat side is handled by {@link io.cargoiq.adapter.out.ai.ChatModelRouter},
+ * which picks mock / Ollama / a configured provider per request.
  */
 @Configuration
 public class AiConfig {
-    // Reserved for future bean overrides — e.g. custom retry advisor,
-    // token-usage logger, etc.
+
+    @Bean
+    @ConditionalOnMissingBean(EmbeddingModel.class)
+    public EmbeddingModel mockEmbeddingModel(
+            @Value("${spring.ai.vectorstore.pgvector.dimensions:1536}") int dimensions) {
+        return new MockEmbeddingModel(dimensions);
+    }
 }

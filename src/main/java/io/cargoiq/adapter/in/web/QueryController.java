@@ -47,7 +47,8 @@ public class QueryController {
                 req.query(),
                 req.topKOrDefault(),
                 Optional.ofNullable(req.filterByType()),
-                Optional.ofNullable(req.filterByIncoterm()));
+                Optional.ofNullable(req.filterByIncoterm()),
+                req.modelChoice());
         return QueryResponse.from(answerQuery.answer(query));
     }
 
