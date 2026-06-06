@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
  * In-memory HS-code reference data.
  *
  * <p>Loaded once at startup from {@code classpath:reference/hs-codes.csv}.
- * For a portfolio app this is the right call: the HS schedule is ~5,000
- * rows at the 6-digit level, easily under a megabyte resident, and avoiding
- * a DB round-trip per lookup makes the MCP tool feel snappy.
+ * At this scale that is the right call: the HS schedule is ~5,000 rows at the
+ * 6-digit level, easily under a megabyte resident, and avoiding a DB round-trip
+ * per lookup keeps the MCP tool snappy.
  *
- * <p>For production-scale (full 10-digit national tariffs) you'd swap this
- * out for a JPA-backed adapter — the port doesn't change.
+ * <p>For full 10-digit national tariffs this would be swapped for a JPA-backed
+ * adapter — the port doesn't change.
  *
  * <h3>CSV format</h3>
  * <pre>code,description,chapter</pre>

@@ -19,9 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Testcontainers, zero network — the service is exercised in pure Java
  * against in-memory fakes that satisfy its outbound ports. Sub-millisecond.
  *
- * <p>The same pattern works for every other use case in the codebase. When
- * you're filling in business rules over the weekend, write the test first
- * with a fake, then drop in the real adapter and integration-test it
+ * <p>The same pattern works for every use case in the codebase: drive the
+ * business rules against fakes here, and integration-test the real adapters
  * separately.
  */
 class AnswerQueryServiceTest {

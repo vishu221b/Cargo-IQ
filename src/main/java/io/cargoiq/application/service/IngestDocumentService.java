@@ -29,10 +29,11 @@ import java.util.UUID;
  * </pre>
  *
  * <p>Three ports, one transaction. If indexing fails, the JPA insert rolls
- * back — the vector store insert is non-transactional, so the adapter is
- * responsible for compensating writes if you go to production scale. For the
- * scaffold the happy path is what matters; the {@link Transactional} on this
- * method documents the intent.
+ * back — the vector store insert is non-transactional, so at production scale
+ * the adapter would own compensating writes. The {@link Transactional} on this
+ * method documents that boundary.
+ *
+ * @author Vishal Dogra
  */
 @Service
 public class IngestDocumentService implements IngestDocumentUseCase {

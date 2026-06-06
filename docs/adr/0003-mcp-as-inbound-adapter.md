@@ -36,7 +36,7 @@ return". Same body shape as a controller. Different annotations.
 - **Zero duplication.** Every MCP tool calls the same use case its REST
   twin would. No business logic in either layer.
 - **Single deployment.** One Docker image, one container, one network
-  boundary, one set of metrics. For a portfolio app this is essential.
+  boundary, one set of metrics — the right default at this scale.
 - **Single source of truth for prompts and grounding.** The system prompt
   in `SpringAiChatModelAdapter` applies whether the question came via REST
   or via MCP — there's no "MCP path" that could drift.

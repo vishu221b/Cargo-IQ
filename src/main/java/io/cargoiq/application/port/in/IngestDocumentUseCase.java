@@ -8,9 +8,9 @@ import io.cargoiq.domain.model.DocumentType;
  *
  * <p>Returns the persisted {@link Document} aggregate (with chunks and ID
  * assigned). Side effects (embedding, persistence) happen synchronously
- * inside the use case implementation — for production scale you'd queue this,
- * but for a portfolio app keeping it synchronous makes debugging trivial and
- * the demo flow legible.
+ * inside the use case implementation — at production scale this would be
+ * queued; keeping it synchronous here makes the flow legible and failures
+ * easy to trace.
  */
 public interface IngestDocumentUseCase {
 

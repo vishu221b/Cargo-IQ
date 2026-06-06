@@ -41,6 +41,8 @@ import java.util.List;
  *   <li><b>Conversational memory:</b> add a {@code ChatMemoryPort} and prepend
  *       prior turns. Spring AI's ChatMemory primitives can sit behind it.</li>
  * </ul>
+ *
+ * @author Vishal Dogra
  */
 @Service
 public class AnswerQueryService implements AnswerQueryUseCase {

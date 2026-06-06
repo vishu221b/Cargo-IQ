@@ -11,8 +11,7 @@ MongoDB Atlas, Elasticsearch, Azure Cognitive Search, and others — all behind
 a common `VectorStore` interface.
 
 The choice has two axes:
-- **Operational simplicity** — for a portfolio app a reviewer can clone and
-  `docker compose up` in 60 seconds.
+- **Operational simplicity** — clone and `docker compose up` in 60 seconds.
 - **Production credibility** — the answer should be the same one a real shop
   would defend in an architecture review.
 
@@ -34,8 +33,8 @@ metric: cosine.
   filters (`type = 'BILL_OF_LADING'`) with vector search natively, in SQL.
 - Postgres already has the operational maturity (replication, PITR,
   observability) that purpose-built vector DBs are still catching up on.
-- The HNSW index is fast enough for the corpus sizes a portfolio app will
-  ever see, and into the "real production" range.
+- The HNSW index is fast enough for the corpus sizes this project targets,
+  and well into the "real production" range.
 
 **Negative**
 
@@ -49,7 +48,7 @@ metric: cosine.
 ## Alternatives considered
 
 - **Qdrant** — excellent product, but adds a second piece of infrastructure
-  for a portfolio app and gives little on top of pgvector at our scale.
+  and gives little on top of pgvector at this scale.
 - **Pinecone** — managed and fast, but cloud-only and not free-tier-runnable
   in a way that matches our "clone and `docker compose up`" goal.
 - **Chroma** — popular for prototypes, weaker on filter pushdown and

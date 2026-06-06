@@ -53,6 +53,12 @@ Dependencies point inward: `adapter` → `application` → `domain`. The domain 
 - **Ingest** (`POST /api/v1/documents` or `ingest_cargo_document` tool) → `IngestDocumentService` → parse (chunks + metadata) → persist aggregate (JPA) → embed + index (vector store).
 - **Query/RAG** (`POST /api/v1/query` or `search_cargo_documents` tool) → `AnswerQueryService` → `VectorStorePort.similaritySearch` → `ChatModelPort.generateGrounded` → `Answer(text, citations)`. `Answer.isGrounded()` reflects whether any citations came back.
 
+### Auth & RBAC
+Stateless JWT (HS256). `POST /api/v1/auth/login` issues a token; protected requests carry `Authorization: Bearer <jwt>`, validated by Spring Security's OAuth2 resource server. Roles `USER`/`ADMIN` (`domain.model.Role`) ride in the `roles` claim as `ROLE_*`. Corpus-mutating endpoints (`POST`/`DELETE /api/v1/documents`) require `ADMIN`; other `/api/v1/**` requires any authenticated user; auth/docs/health/`/mcp` are public. Credential check + token minting sit behind `UserRepository`/`PasswordHasherPort`/`TokenIssuerPort` — the security framework never reaches the core. Dev profile seeds a bootstrap admin (`DataInitializer`).
+
+### Model providers
+Four Spring AI starters on the classpath (OpenAI, Anthropic, Gemini, Ollama); the active chat/embedding providers are chosen by `spring.ai.model.chat` / `spring.ai.model.embedding` (default openai). No domain/application change to switch — see `docs/model-providers.md`. The `ollama` profile runs key-free locally and sets the pgvector width to 768.
+
 ## Testing strategy (three rings)
 - **Ring 1 — domain** (`IncotermTest`): pure JUnit, no Spring, milliseconds.
 - **Ring 2 — use case** (`AnswerQueryServiceTest`): JUnit + hand-rolled fake ports (anonymous classes in the test), no Spring/Mockito/Testcontainers. **This is the primary dev mode** — possible only because services import no framework types.
@@ -62,10 +68,10 @@ Don't write `@WebMvcTest` for adapters that only delegate — add controller/too
 
 ## Config & RAG tunables
 - Profiles: `application.yml` (defaults) + `application-dev.yml` / `application-prod.yml`, selected by `SPRING_PROFILES_ACTIVE` (compose sets `dev`). `.env.example` documents every env var.
-- Embedding dims **must** match the model: `text-embedding-3-small` = 1536 (`spring.ai.vectorstore.pgvector.dimensions`). Changing the model means changing dimensions and rebuilding the index.
+- Embedding dims **must** match the active embedding model (`spring.ai.vectorstore.pgvector.dimensions` / `VECTOR_DIMENSIONS`): OpenAI 3-small = 1536, Gemini/Ollama = 768. Switching embedding providers means re-indexing (`docs/model-providers.md`).
 - Chunking constants (800 chars / 120 overlap) live in `TextDocumentParser`.
 - MCP transport is `STREAMABLE` (single `POST /mcp`). New `@Tool` beans must be registered explicitly in `McpConfig` (no package scan — keeps the inventory diff-reviewable).
-- `SecurityConfig` is an intentional empty stub (app ships open for local iteration); the javadoc lists the OAuth2 upgrade path.
+- `SecurityConfig` wires the JWT filter chain + encode/decode beans; the dev `JWT_SECRET` default must be overridden anywhere reachable.
 
 ## Roadmap hooks
 Stubs and extension points are deliberate: `adapter/in/mcp/prompts/` and `adapter/in/mcp/resources/` are stubbed; re-ranking/multi-query/hybrid-search slot into `AnswerQueryService` behind new/extended ports. See ARCHITECTURE.md §5 and §14, and `docs/adr/` for the decision records.

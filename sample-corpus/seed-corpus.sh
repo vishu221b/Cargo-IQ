@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 # seed-corpus.sh — POST every sample document into the running app.
 # Run with `./sample-corpus/seed-corpus.sh` once the app is up on :8080.
+#
+# Ingest requires the ADMIN role, so the script logs in first and uses the
+# returned JWT. Override the credentials with ADMIN_USER / ADMIN_PASS; they
+# default to the dev-profile bootstrap admin (see DataInitializer).
 
 set -euo pipefail
 HOST="${CARGOIQ_HOST:-http://localhost:8080}"
+ADMIN_USER="${ADMIN_USER:-admin}"
+ADMIN_PASS="${ADMIN_PASS:-admin12345}"
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "→ logging in as '$ADMIN_USER'"
+TOKEN=$(curl -fsS -X POST "$HOST/api/v1/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d "$(jq -n --arg u "$ADMIN_USER" --arg p "$ADMIN_PASS" '{username:$u, password:$p}')" \
+  | jq -r '.accessToken')
+[ -n "$TOKEN" ] && [ "$TOKEN" != "null" ] || { echo "  ✗ login failed"; exit 1; }
+echo "  ✓ got bearer token"
 
 post() {
   local title="$1" type="$2" file="$3"
@@ -18,6 +32,7 @@ post() {
     '{title:$t, type:$ty, sourceUri:$u, text:$tx}')
   curl -fsS -X POST "$HOST/api/v1/documents" \
     -H 'Content-Type: application/json' \
+    -H "Authorization: Bearer $TOKEN" \
     -d "$payload" \
     | jq -r '"  ✓ " + .id + " (" + (.chunkCount|tostring) + " chunks)"'
 }

@@ -381,9 +381,10 @@ STDIO — bridge with `mcp-remote` (see the README).
 ### What's stubbed, why
 
 `prompts/TradeFinancePrompts.java` and `resources/DocumentResources.java`
-ship as deliberate stubs. The Spring AI 1.1 docs cover both — they're
-worth adding for polish but not blocking on for a v1 demo. Each stub file's
-javadoc lists three concrete things you'd add over the weekend.
+are deliberate stubs. Tools are the headline MCP surface and ship first;
+prompts and resources layer on top of a stable tool inventory. Each stub
+file's javadoc describes the concrete features planned and the Spring AI 1.1
+APIs that back them.
 
 ---
 
@@ -470,12 +471,11 @@ One test, one container. Catches misconfiguration the other two rings can't
 
 ### What about controller / adapter tests?
 
-For a portfolio scaffold, leaving inbound adapters (`DocumentController`,
-the MCP tools) untested is acceptable — they're one-line delegations. When
-you add real logic in a controller (e.g. parsing a multi-part upload, doing
-HMAC verification on a webhook) **that's** when you add a `@WebMvcTest`.
-Don't write tests for adapters that don't do anything yet — that's just
-ceremony.
+Inbound adapters that are pure one-line delegations (`DocumentController`,
+the MCP tools) don't carry their own tests — there is no logic there to
+verify that the use-case tests don't already cover. A `@WebMvcTest` earns its
+place the moment an adapter grows real logic (parsing a multi-part upload,
+HMAC-verifying a webhook). Testing trivial delegations is ceremony.
 
 ---
 
@@ -498,9 +498,9 @@ a profile (Testcontainers handles the datasource).
 3. `application.yml`
 
 This is plain Spring Boot — nothing exotic. The reason it's worth calling
-out: the `.env.example` file documents every env var that exists, so a
-reviewer of your GitHub doesn't have to grep for `${...}` to figure out
-how to run it.
+out: the `.env.example` file documents every env var that exists, so running
+the app is never a grep through `${...}` placeholders to figure out what it
+expects.
 
 ---
 
@@ -529,23 +529,29 @@ look for `spring_ai_*` metrics once you're issuing real LLM calls.
 
 ## 11. Security stance
 
-Ships **open** on purpose, so you can iterate locally without juggling
-tokens. `SecurityConfig` is a deliberate empty `@Configuration` whose
-javadoc lays out the two upgrade paths (OAuth2 resource server for
-first-party apps, API key header for the MCP endpoint).
+Authentication is **stateless JWT**; authorization is **role-based** (see
+`SecurityConfig`). The app is both authorization server and resource server:
+`POST /api/v1/auth/login` mints an HS256-signed JWT, and every protected
+request is validated as a bearer token by Spring Security's OAuth2 resource
+server.
 
-You have a Cybersecurity Masters; this is the file a reviewer is most
-likely to inspect on your GitHub. Leaving it as a documented stub reads
-much better than a filter chain that silently lets everything through. When
-you do enable it:
+- **Roles.** `USER` reads the corpus and runs RAG queries; `ADMIN` additionally
+  ingests and deletes documents (the corpus-mutating operations). Authorities
+  ride in the `roles` JWT claim in `ROLE_*` form, so `hasRole('ADMIN')` resolves
+  directly.
+- **Open by design.** Auth endpoints, the OpenAPI docs, the actuator liveness
+  probes, and the embedded MCP endpoint (`/mcp`) are permitted without a token
+  so MCP Inspector and Swagger UI work out of the box. Putting `/mcp` behind the
+  same bearer scheme is a one-line change in the filter chain.
+- **Why the design stays at the edge.** The credential check lives in
+  `AuthenticateUserService` against a `UserRepository` port, password hashing
+  behind `PasswordHasherPort` (BCrypt), and token minting behind
+  `TokenIssuerPort` (Nimbus JWT). The security framework never reaches into the
+  domain — swapping HS256 for an RS256 key pair + JWKS, or BCrypt for Argon2, is
+  an adapter change.
 
-1. Add `spring-boot-starter-oauth2-resource-server` to `pom.xml`.
-2. Set `spring.security.oauth2.resourceserver.jwt.issuer-uri` (the prod
-   profile already has it commented).
-3. Add a `SecurityFilterChain` bean to `SecurityConfig` that permits
-   `/actuator/health`, `/v3/api-docs/**`, `/swagger/**`, requires auth on
-   `/api/**` and `/mcp/**`, and disables CSRF for the API surface.
-4. Smoke-test against MCP Inspector with a real bearer token.
+**Hardening before any public deployment:** override `JWT_SECRET` (≥ 32 bytes),
+disable the `dev` profile's bootstrap admin, and front `/mcp` with auth.
 
 ---
 
@@ -577,23 +583,22 @@ old one — the history is the point.
 
 ---
 
-## 14. Where you go next (concretely)
+## 14. Next steps
 
-In rough order, each item is a single-session piece of work:
+Already in place: JWT auth + RBAC (§11), pluggable model providers
+(`docs/model-providers.md`), and document delete with a two-store cascade.
+Remaining, each a self-contained piece of work:
 
-1. **Re-ranking.** `RerankerPort` + a Cohere adapter or local model.
-2. **PDF ingest.** `PdfDocumentParser` using the Tika dependency that's
-   already in `pom.xml`.
-3. **HS taxonomy expansion.** Either swap the CSV for the full WCO export
-   (still in-memory) or move to a Postgres FTS-backed adapter.
-4. **MCP Prompts.** Three named templates as listed in the
-   `TradeFinancePrompts` javadoc.
+1. **Re-ranking.** `RerankerPort` + a Cohere adapter or local model, called in
+   `AnswerQueryService` between retrieval and generation.
+2. **PDF ingest.** `PdfDocumentParser` using the Tika dependency already in
+   `pom.xml`.
+3. **HS taxonomy expansion.** Swap the CSV for the full WCO export (still
+   in-memory) or move to a Postgres FTS-backed adapter.
+4. **MCP Prompts.** The named templates listed in the `TradeFinancePrompts`
+   javadoc.
 5. **MCP Resources.** Expose each `Document` at `cargo://documents/{id}`.
-6. **Auth.** OAuth2 resource server per `SecurityConfig` javadoc.
-7. **Deploy.** Fly.io or Railway; add the live URL to the repo description.
-8. **Demo asset.** Record a 30-second screencap of Claude Desktop using the
-   MCP tools, drop it into the README. **This is the single biggest
-   recruiter-facing artifact** — make sure it gets done.
+6. **Deploy.** A container target (Fly.io / Railway) with a small seed corpus.
 
 Every one of these has an explicit hook in the code (a port, a stubbed
 class, a TODO comment, or a javadoc upgrade plan). The scaffold is meant to

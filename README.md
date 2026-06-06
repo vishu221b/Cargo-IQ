@@ -43,29 +43,46 @@ Adapters). See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the deep walkthrough
 
 ```bash
 cp .env.example .env
-# edit .env, paste your OPENAI_API_KEY
+# Pick a model provider:
+#   - OpenAI/Anthropic/Gemini: paste the relevant API key (see docs/model-providers.md)
+#   - Ollama (no key): `ollama pull llama3.1 && ollama pull nomic-embed-text`
+#     then set SPRING_PROFILES_ACTIVE=dev,ollama
 
 docker compose up --build
 ```
 
-The app listens on `http://localhost:8080`.
+The app listens on `http://localhost:8080`. The `dev` profile seeds a bootstrap
+admin (`admin` / `admin12345` by default — override via `.env`).
 
-### 2. Seed the sample corpus
+### 2. Log in (JWT) and seed the sample corpus
+
+The API is secured with JWT + RBAC. Ingest requires the `ADMIN` role; the seed
+script logs in for you:
 
 ```bash
-./sample-corpus/seed-corpus.sh
+./sample-corpus/seed-corpus.sh          # logs in as admin, then ingests 5 docs
 ```
 
-You should see 5 documents go in with their IDs printed.
+To get a token by hand:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin12345"}' | jq -r .accessToken)
+```
 
 ### 3. Ask the corpus a question
 
 ```bash
 curl -s -X POST http://localhost:8080/api/v1/query \
   -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{"query":"Which shipments were discharged at Brisbane and what INCOTERMs applied?"}' \
   | jq
 ```
+
+Self-service registration (`POST /api/v1/auth/register`) creates a `USER` who
+can query and read but cannot ingest or delete.
 
 ### 4. Connect an MCP client
 
@@ -116,18 +133,22 @@ never need a container, only the smoke test does. See `ARCHITECTURE.md` §
 
 ## REST surface (highlights)
 
-| Method | Path | Purpose |
-|---|---|---|
-| POST | `/api/v1/documents` | Ingest a document (chunks, embeds, indexes) |
-| GET | `/api/v1/documents` | List documents, filterable by type |
-| GET | `/api/v1/documents/{id}` | Fetch a single document |
-| POST | `/api/v1/query` | RAG: ask a grounded question with citations |
-| GET | `/api/v1/incoterms/{code}` | Canonical INCOTERM 2020 rule lookup |
-| GET | `/api/v1/hs-codes/{code}` | HS code by exact code |
-| GET | `/api/v1/hs-codes/search?q=...` | HS code by description |
-| GET | `/swagger` | Swagger UI |
-| GET | `/actuator/health` | Liveness/readiness |
-| GET | `/actuator/prometheus` | Metrics |
+| Method | Path | Role | Purpose |
+|---|---|---|---|
+| POST | `/api/v1/auth/register` | public | Create a `USER` account |
+| POST | `/api/v1/auth/login` | public | Exchange credentials for a bearer JWT |
+| GET | `/api/v1/auth/me` | any auth | Identity + roles from the presented token |
+| POST | `/api/v1/documents` | ADMIN | Ingest a document (chunks, embeds, indexes) |
+| DELETE | `/api/v1/documents/{id}` | ADMIN | Delete a document (cascades JPA + vector store) |
+| GET | `/api/v1/documents` | any auth | List documents, filterable by type |
+| GET | `/api/v1/documents/{id}` | any auth | Fetch a single document |
+| POST | `/api/v1/query` | any auth | RAG: ask a grounded question with citations |
+| GET | `/api/v1/incoterms/{code}` | any auth | Canonical INCOTERM 2020 rule lookup |
+| GET | `/api/v1/hs-codes/{code}` | any auth | HS code by exact code |
+| GET | `/api/v1/hs-codes/search?q=...` | any auth | HS code by description |
+| GET | `/swagger` | public | Swagger UI (with "Authorize" for the bearer token) |
+| GET | `/actuator/health` | public | Liveness/readiness |
+| GET | `/actuator/prometheus` | any auth | Metrics |
 
 ---
 
@@ -171,28 +192,40 @@ io.cargoiq
 
 ---
 
-## Roadmap (the weekend you're about to spend on this)
+## Roadmap
 
-Read `ARCHITECTURE.md` first — every item below has a marker in the code or
-docs explaining where to slot the change in.
+Each item below has a marker in the code or docs explaining where it slots in;
+`ARCHITECTURE.md` has the detail.
 
+- [x] **Auth** — stateless JWT + RBAC (USER/ADMIN) via Spring Security.
+- [x] **Pluggable model providers** — OpenAI, Anthropic, Gemini, Ollama
+      (see `docs/model-providers.md`).
+- [x] **Document delete** — cascade across the JPA aggregate and pgvector.
 - [ ] **Document Resources** — expose every persisted `Document` as an MCP
       resource at `cargo://documents/{id}`.
-- [ ] **MCP Prompts** — add `compare_bl_to_invoice`, `letter_of_credit_compliance_check`,
+- [ ] **MCP Prompts** — `compare_bl_to_invoice`, `letter_of_credit_compliance_check`,
       `port_handover_brief`.
-- [ ] **Re-ranking** — wire a cross-encoder re-ranker (Cohere or local
-      bge-reranker) between retrieval and generation in `AnswerQueryService`.
-- [ ] **PDF ingest** — add a `PdfDocumentParser` using Spring AI's Tika reader
+- [ ] **Re-ranking** — a cross-encoder re-ranker (Cohere or local bge-reranker)
+      between retrieval and generation in `AnswerQueryService`.
+- [ ] **PDF ingest** — a `PdfDocumentParser` using Spring AI's Tika reader
       (the dependency is already in `pom.xml`).
 - [ ] **HS taxonomy** — replace the curated CSV with the full WCO HS 2022
-      export; consider a Postgres FTS-backed adapter once size justifies it.
-- [ ] **Auth** — fill in `SecurityConfig` with OAuth2 resource-server config
-      before deploying anywhere reachable.
-- [ ] **Hosted demo** — Fly.io or Railway, deploy with a small seed corpus.
-      Add the live URL to the GitHub repo description.
+      export; a Postgres FTS-backed adapter once size justifies it.
+
+---
+
+## How this project is built
+
+This is a personal project, built with AI assistance used deliberately as an
+engineering tool — for scaffolding, drafting, and exploring options — while the
+design decisions, domain modelling, and architecture are my own. **Every change
+is manually reviewed, run, and tested before it is merged**; the layered unit
+tests (`mvn verify`) are the gate, and no PR lands without a green build and a
+read-through of the diff. The intent is a codebase I fully understand and stand
+behind, not generated output taken on faith.
 
 ---
 
 ## License
 
-Apache 2.0. See [`LICENSE`](./LICENSE) — add one before publishing.
+Apache 2.0.

@@ -3,10 +3,9 @@ package io.cargoiq.domain.model;
 /**
  * Kinds of documents in the trade-finance corpus.
  *
- * <p>Driven by interview-credible domain knowledge: these are the actual
- * artefacts that change hands in international shipping. Keeping the list
- * explicit (not a free-text "category" field) lets ingestion pick the right
- * parser and lets queries filter cleanly.
+ * <p>These are the actual artefacts that change hands in international
+ * shipping. Keeping the list explicit (not a free-text "category" field) lets
+ * ingestion pick the right parser and lets queries filter cleanly.
  */
 public enum DocumentType {
     /** Master Bill of Lading or House Bill of Lading — title-of-goods document. */

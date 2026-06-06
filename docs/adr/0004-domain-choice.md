@@ -5,62 +5,57 @@
 
 ## Context
 
-A RAG demo needs a domain. Generic choices ("notes app", "PDF chat") are
-easy to build and forgettable to look at. The domain is the single biggest
-lever on whether this project moves a recruiter's needle.
+A RAG system needs a domain, and the domain shapes what the architecture has to
+prove. Generic choices ("notes app", "PDF chat") exercise retrieval but little
+else — there is no reason for deterministic tools, no reference data to ground
+against, and no real structure to extract.
 
-Constraints for the choice:
+What the domain needs to provide:
 
-- Must connect to authentic prior work — credible interview talking points.
-- Must be niche enough to stand out in a portfolio.
-- Must give the LLM/MCP server *something interesting to do* beyond
-  "summarise this PDF" — a real reason for tool calls, a real reason for
-  grounding to matter.
-- Must fit in a weekend.
+- A reason for the LLM/MCP server to do *something beyond summarising a PDF* —
+  genuine tool calls, and a genuine reason for grounding to matter.
+- Both **unstructured** content (documents to retrieve over) and **structured,
+  authoritative** reference data (where an LLM should *not* be guessing).
+- Real, finite vocabulary that makes correctness checkable rather than vibes.
 
 ## Decision
 
-Pick **international cargo and trade finance** as the domain:
+Use **international cargo and trade finance** as the domain:
 
-- Documents: Bills of Lading, Sea Waybills, Commercial Invoices, Packing
-  Lists, Letters of Credit, Certificates of Origin, Charter Parties.
+- Documents: Bills of Lading, Sea Waybills, Commercial Invoices, Packing Lists,
+  Letters of Credit, Certificates of Origin, Charter Parties.
 - Reference data: INCOTERMS 2020 (the 11-rule ICC ruleset) and the HS
   (Harmonised System) tariff taxonomy.
-- Use cases: ingest + semantic search over the corpus; deterministic
-  lookup of INCOTERMS and HS codes; structured summarisation of one known
-  document.
+- Use cases: ingest + semantic search over the corpus; deterministic lookup of
+  INCOTERMS and HS codes; structured summarisation of one known document.
 
 ## Consequences
 
 **Positive**
 
-- **Sits at the intersection of logistics, finance, and integration** —
-  three of the four high-value backend hiring tracks in Brisbane.
-- **Credible career story.** Aligns with prior logistics work (Rivigo) and
-  fintech consulting (Unthinkable Solutions). The interview answer to "why
-  this?" writes itself.
 - **The domain rewards both RAG and structured tools.** Document Q&A is RAG;
-  INCOTERM rule lookup is deterministic and shouldn't go through an LLM at
-  all. Having both kinds of tool in one MCP server demonstrates the right
-  judgement.
-- **The vocabulary is real.** B/L, LC, CIF, FOB, demurrage, consignee.
-  Reading the code, a reviewer sees domain awareness, not buzzword bingo.
+  INCOTERM rule lookup is deterministic and should not go through an LLM at all.
+  Exposing both kinds of tool in one MCP server is the whole point — it forces a
+  clean separation between "retrieve and reason" and "look up a fact".
+- **Grounding is meaningful.** Trade-finance answers carry money and legal
+  weight, so an ungrounded or uncited answer is a real defect, not a cosmetic
+  one. That makes the citation contract (every claim traceable) load-bearing.
+- **The vocabulary is real and finite.** B/L, LC, CIF, FOB, demurrage,
+  consignee — and exactly eleven INCOTERMS, with specific scopes. Correctness is
+  verifiable; the hard-coded enum in `Incoterm.java` is deliberate so the system
+  cannot "hallucinate" a twelfth rule.
 
 **Negative**
 
-- Less general-audience than, say, a customer-support chatbot. Compensated
-  by being *more* memorable to a specialist hiring manager.
-- The reference data is real and finite — we can't accidentally hallucinate
-  INCOTERMS 2020 having 14 rules. Eleven, with specific scopes. The hard-
-  coded enum in `Incoterm.java` is on purpose.
+- Narrower general appeal than a customer-support chatbot, and the reference
+  data must be kept accurate by hand. Both are acceptable: the domain's
+  structure is exactly what makes the RAG-vs-deterministic split worth building.
 
 ## Alternatives considered
 
-- **Personal notes / journaling RAG** — done to death; no differentiation.
-- **Codebase Q&A** — popular, but the eval landscape is saturated with
-  competing products (Cursor, Aider, etc.).
-- **Regulatory / compliance Q&A** — interesting but the cybersecurity
-  angle of the author's profile already covers that ground via other
-  projects.
-- **Pure freight tariff comparison** — narrow; loses the trade-finance
-  angle that broadens the appeal to banking employers.
+- **Personal notes / journaling RAG** — pure retrieval, no structured tools, no
+  authoritative reference data to ground against.
+- **Codebase Q&A** — interesting, but the problem space is saturated with mature
+  products (Cursor, Aider, etc.) and adds little to demonstrate here.
+- **Pure freight tariff comparison** — too narrow; loses the trade-finance
+  documents that make the corpus worth retrieving over.
