@@ -113,6 +113,25 @@ bridge with `mcp-remote`:
 
 ---
 
+## Web UI
+
+A modern single-page client lives in [`frontend/`](./frontend) — React 18 +
+TypeScript + Vite + Tailwind, with framer-motion micro-interactions and an
+Aceternity/21st.dev-style visual language. It exercises the backend end to end:
+JWT auth with role-aware gating, a live corpus dashboard (`/api/v1/overview`),
+document browse/ingest/delete, RAG queries with grounded/citation rendering, and
+the INCOTERMS + HS-code reference lookups.
+
+```bash
+docker compose up --build          # API on :8080
+cd frontend && npm install && npm run dev   # UI on :5173
+```
+
+Sign in with the dev bootstrap admin (`admin` / `admin12345`). See
+[`frontend/README.md`](./frontend/README.md) for details.
+
+---
+
 ## Running tests
 
 ```bash

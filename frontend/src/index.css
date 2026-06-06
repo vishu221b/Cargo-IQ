@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-ink-950 text-slate-200 font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Refined, low-contrast scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-ink-600 rounded-full;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-700;
+  }
+  ::selection {
+    background: rgba(124, 92, 255, 0.35);
+  }
+}
+
+@layer components {
+  /* Glassmorphic panel used across cards, the sidebar, modals. */
+  .glass {
+    @apply bg-ink-900/60 backdrop-blur-xl border border-white/[0.06];
+  }
+  .glass-strong {
+    @apply bg-ink-850/80 backdrop-blur-2xl border border-white/[0.08];
+  }
+  /* Subtle gradient hairline that reads as a premium divider. */
+  .hairline {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent
+    );
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #c4b5fd 0%, #7c5cff 45%, #22d3ee 100%);
+  }
+  .focus-ring {
+    @apply outline-none ring-2 ring-accent/60 ring-offset-2 ring-offset-ink-950;
+  }
+}

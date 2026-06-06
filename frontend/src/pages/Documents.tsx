@@ -1,0 +1,274 @@
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Upload,
+  Trash2,
+  FileText,
+  Ship,
+  X,
+  Filter,
+  PackageOpen,
+} from "lucide-react";
+import { api, ApiError } from "@/lib/api";
+import { DOCUMENT_TYPES, type DocumentSummary, type DocumentType } from "@/lib/types";
+import { useAuth } from "@/auth/AuthContext";
+import { useToast } from "@/components/ui/Toast";
+import {
+  Badge,
+  Button,
+  Card,
+  Field,
+  Input,
+  Select,
+  Spinner,
+  Textarea,
+} from "@/components/ui/primitives";
+import { cn, formatDate, humanize } from "@/lib/utils";
+
+const TYPE_TONE: Record<string, "accent" | "cyan" | "emerald" | "amber" | "default"> = {
+  BILL_OF_LADING: "accent",
+  COMMERCIAL_INVOICE: "emerald",
+  LETTER_OF_CREDIT: "amber",
+  REFERENCE: "cyan",
+};
+
+export default function Documents() {
+  const { isAdmin } = useAuth();
+  const toast = useToast();
+  const [docs, setDocs] = useState<DocumentSummary[] | null>(null);
+  const [filter, setFilter] = useState<DocumentType | "">("");
+  const [showIngest, setShowIngest] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    setDocs(null);
+    setError(null);
+    try {
+      setDocs(await api.listDocuments(filter || undefined, 100));
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Failed to load documents");
+      setDocs([]);
+    }
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
+  async function remove(doc: DocumentSummary) {
+    if (!confirm(`Delete "${doc.title}"? This removes its vectors too.`)) return;
+    try {
+      await api.deleteDocument(doc.id);
+      setDocs((d) => (d ? d.filter((x) => x.id !== doc.id) : d));
+      toast.success("Document deleted.");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Delete failed");
+    }
+  }
+
+  return (
+    <div className="space-y-7">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white">Documents</h1>
+          <p className="mt-1 text-sm text-slate-400">
+            The ingested corpus — chunked, embedded and searchable.
+          </p>
+        </div>
+        {isAdmin && (
+          <Button icon={<Upload className="h-4 w-4" />} onClick={() => setShowIngest(true)}>
+            Ingest document
+          </Button>
+        )}
+      </header>
+
+      <div className="flex items-center gap-3">
+        <Filter className="h-4 w-4 text-slate-500" />
+        <div className="w-56">
+          <Select value={filter} onChange={(e) => setFilter(e.target.value as DocumentType | "")}>
+            <option value="">All types</option>
+            {DOCUMENT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {humanize(t)}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      {error && <Card className="border-rose-500/20 p-5 text-sm text-rose-300">{error}</Card>}
+
+      {docs === null ? (
+        <div className="grid place-items-center py-24">
+          <Spinner className="h-7 w-7" />
+        </div>
+      ) : docs.length === 0 ? (
+        <EmptyState isAdmin={isAdmin} onIngest={() => setShowIngest(true)} />
+      ) : (
+        <div className="grid gap-3">
+          {docs.map((doc, i) => (
+            <motion.div
+              key={doc.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i * 0.03, 0.3) }}
+            >
+              <Card className="flex items-start gap-4 p-4 transition hover:border-white/[0.12]">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-slate-300">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate font-medium text-slate-100">{doc.title}</h3>
+                    <Badge tone={TYPE_TONE[doc.type] ?? "default"}>{humanize(doc.type)}</Badge>
+                    {doc.metadata.incoterm && (
+                      <Badge tone="cyan">
+                        <Ship className="h-3 w-3" /> {doc.metadata.incoterm}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                    <span>{doc.chunkCount} chunks</span>
+                    {doc.metadata.vesselName && <span>Vessel: {doc.metadata.vesselName}</span>}
+                    {doc.metadata.portOfDischarge && <span>→ {doc.metadata.portOfDischarge}</span>}
+                    {doc.metadata.invoiceValue != null && (
+                      <span>
+                        {doc.metadata.currency ?? ""} {doc.metadata.invoiceValue.toLocaleString()}
+                      </span>
+                    )}
+                    <span>{formatDate(doc.ingestedAt)}</span>
+                  </div>
+                </div>
+                {isAdmin && (
+                  <button
+                    onClick={() => remove(doc)}
+                    className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-300"
+                    title="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showIngest && (
+          <IngestModal
+            onClose={() => setShowIngest(false)}
+            onDone={(d) => {
+              setDocs((cur) => (cur ? [d, ...cur] : [d]));
+              setShowIngest(false);
+              toast.success(`Ingested "${d.title}" (${d.chunkCount} chunks).`);
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function EmptyState({ isAdmin, onIngest }: { isAdmin: boolean; onIngest: () => void }) {
+  return (
+    <Card className="grid place-items-center gap-3 px-6 py-16 text-center">
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/[0.05] text-slate-400">
+        <PackageOpen className="h-7 w-7" />
+      </div>
+      <p className="text-slate-300">No documents in the corpus yet.</p>
+      {isAdmin ? (
+        <Button variant="subtle" icon={<Upload className="h-4 w-4" />} onClick={onIngest}>
+          Ingest your first document
+        </Button>
+      ) : (
+        <p className="text-sm text-slate-500">Ask an admin to ingest documents.</p>
+      )}
+    </Card>
+  );
+}
+
+function IngestModal({
+  onClose,
+  onDone,
+}: {
+  onClose: () => void;
+  onDone: (d: DocumentSummary) => void;
+}) {
+  const toast = useToast();
+  const [title, setTitle] = useState("");
+  const [type, setType] = useState<DocumentType>("BILL_OF_LADING");
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const doc = await api.ingestDocument({ title: title.trim(), type, text });
+      onDone(doc);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Ingest failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 grid place-items-center bg-ink-950/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.96, y: 12 }}
+        transition={{ type: "spring", stiffness: 320, damping: 28 }}
+        onClick={(e) => e.stopPropagation()}
+        className="glass-strong w-full max-w-lg rounded-2xl p-6 shadow-card"
+      >
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Ingest a document</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-500 hover:bg-white/[0.05] hover:text-slate-300">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Title">
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="BL — Pacific Roasters → Brisbane" />
+          </Field>
+          <Field label="Type">
+            <Select value={type} onChange={(e) => setType(e.target.value as DocumentType)}>
+              {DOCUMENT_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {humanize(t)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Document text" hint="Pasted raw text is chunked, embedded and indexed on submit.">
+            <Textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              required
+              rows={8}
+              placeholder="Paste the document contents…"
+            />
+          </Field>
+          <div className="flex justify-end gap-2 pt-1">
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={busy} icon={<Upload className="h-4 w-4" />}>
+              Ingest
+            </Button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  );
+}
