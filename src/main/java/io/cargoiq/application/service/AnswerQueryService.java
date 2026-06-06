@@ -8,6 +8,7 @@ import io.cargoiq.domain.model.Citation;
 import io.cargoiq.domain.model.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,7 +53,15 @@ public class AnswerQueryService implements AnswerQueryUseCase {
     private final VectorStorePort vectorStore;
     private final ChatModelPort chatModel;
 
-    public AnswerQueryService(VectorStorePort vectorStore, ChatModelPort chatModel) {
+    /**
+     * {@code chatModel} is injected {@link Lazy} to break a startup bean cycle:
+     * Spring AI's tool-calling autoconfiguration makes the chat model depend on
+     * every {@code ToolCallbackProvider} bean — including the MCP tool registry
+     * ({@code McpConfig}) — whose tools depend back on this service. The lazy
+     * proxy defers building the chat model until the first query, after the
+     * context has finished wiring. The fake passed in unit tests ignores it.
+     */
+    public AnswerQueryService(VectorStorePort vectorStore, @Lazy ChatModelPort chatModel) {
         this.vectorStore = vectorStore;
         this.chatModel = chatModel;
     }
