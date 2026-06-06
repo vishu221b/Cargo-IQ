@@ -87,8 +87,17 @@ public class TextDocumentParser implements DocumentParserPort {
             if (!slice.isBlank()) {
                 out.add(DocumentChunk.of(documentId, seq++, slice));
             }
-            start = end - CHUNK_OVERLAP;
-            if (start <= 0) start = end; // safety
+            // The final window has been emitted — stop. Without this guard the
+            // loop never terminates for texts shorter than CHUNK_SIZE: `end`
+            // pins to the text length while `start = end - CHUNK_OVERLAP` stays
+            // below it, so the `start < length` condition is forever true.
+            if (end >= normalized.length()) {
+                break;
+            }
+            // Step forward by (window - overlap), but always make progress even
+            // if the boundary adjustment pulled `end` back near `start`.
+            int next = end - CHUNK_OVERLAP;
+            start = next > start ? next : end;
         }
         return out;
     }
