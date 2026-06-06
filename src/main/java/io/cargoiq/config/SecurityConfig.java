@@ -66,6 +66,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // --- public ---
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                // Spring Security filters the ERROR dispatch too; permit it so a
+                // validation failure on a public endpoint renders as its real
+                // status (e.g. 400) instead of being turned into a 401.
+                .requestMatchers("/error").permitAll()
                 .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger", "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
