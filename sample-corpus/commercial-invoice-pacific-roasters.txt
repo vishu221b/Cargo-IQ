@@ -1,0 +1,40 @@
+COMMERCIAL INVOICE
+
+Invoice No: PRL-INV-2024-1107
+Invoice Date: 2024-10-15
+Reference: Purchase Order BCC-PO-2024-882
+
+Seller (Shipper): Pacific Roasters Ltd
+                  14 Tannery Lane, Auckland 1010, New Zealand
+                  ABN/IRD: 92-887-431
+
+Buyer (Consignee): Brisbane Coffee Co. Pty Ltd
+                   88 Montague Rd, South Brisbane QLD 4101, Australia
+                   ABN 47-119-228-005
+
+Country of Origin: Honduras (re-exported from New Zealand)
+Country of Destination: Australia
+Incoterm: CIF Brisbane (Incoterms 2020)
+Currency: USD
+Payment Terms: Letter of Credit at sight, LC No. ANZ-LC-44782
+Shipment Method: Sea freight, FCL
+
+Goods description:
+  Description                                Qty (cartons)  Unit Price   Line Total
+  Green coffee beans, Honduran SHG, Arabica  840            148.21       124,500.00
+
+Subtotal (FOB Auckland):                                                 USD 119,400.00
+Ocean freight (Auckland - Brisbane):                                     USD   4,600.00
+Marine insurance (ICC-C minimum, CIF requires):                          USD     500.00
+TOTAL CIF BRISBANE:                                                      USD 124,500.00
+
+HS Code: 0901 (Coffee, whether or not roasted or decaffeinated)
+Gross Weight: 9,120 kg
+Net Weight: 8,400 kg
+Volume: 33.4 cbm
+
+We declare the goods described above to be of the country of origin stated,
+and that the prices are true and correct.
+
+Signed: A. Whitmore, Director, Pacific Roasters Ltd
+Date: 2024-10-15

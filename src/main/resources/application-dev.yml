@@ -1,0 +1,18 @@
+# Dev profile — verbose logging, all actuator endpoints exposed, no auth.
+# Activated automatically when SPRING_PROFILES_ACTIVE=dev (or via the default in
+# application.yml).
+
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    io.cargoiq: DEBUG
+    org.hibernate.SQL: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

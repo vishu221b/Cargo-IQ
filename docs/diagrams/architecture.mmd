@@ -1,0 +1,60 @@
+%% Embed in ARCHITECTURE.md or render to SVG with the Mermaid CLI:
+%%   mmdc -i docs/diagrams/architecture.mmd -o docs/diagrams/architecture.svg
+flowchart TB
+
+  subgraph Clients["External clients"]
+    direction LR
+    Curl["curl / Swagger UI"]
+    LLM["Claude Desktop · Cursor · MCP Inspector"]
+  end
+
+  subgraph Inbound["adapter/in — driving adapters"]
+    direction LR
+    REST["REST controllers<br/>DocumentController, QueryController"]
+    MCP["MCP tools<br/>SearchDocumentsTool, LookupIncotermTool,<br/>LookupHsCodeTool, SummarizeShipmentTool,<br/>IngestDocumentTool"]
+  end
+
+  subgraph Application["application — use cases"]
+    direction TB
+    PortIn["inbound ports<br/>IngestDocumentUseCase · AnswerQueryUseCase<br/>LookupIncotermUseCase · LookupHsCodeUseCase<br/>ListDocumentsUseCase"]
+    Services["services<br/>IngestDocumentService · AnswerQueryService<br/>LookupIncotermService · LookupHsCodeService<br/>ListDocumentsService"]
+    PortOut["outbound ports<br/>DocumentRepository · VectorStorePort<br/>ChatModelPort · DocumentParserPort<br/>ReferenceDataPort"]
+    PortIn --> Services --> PortOut
+  end
+
+  subgraph Domain["domain — pure POJOs"]
+    DomainModel["Document · DocumentChunk · Incoterm<br/>HsCode · Citation · Answer · Query<br/>ShipmentMetadata · exceptions"]
+  end
+
+  subgraph Outbound["adapter/out — driven adapters"]
+    direction LR
+    JPA["DocumentRepositoryAdapter<br/>+ DocumentEntity<br/>+ Spring Data JpaRepository"]
+    Vec["PgVectorAdapter<br/>(wraps Spring AI VectorStore)"]
+    AI["SpringAiChatModelAdapter<br/>(owns the RAG system prompt)"]
+    Parser["TextDocumentParser<br/>(chunking + regex extraction)"]
+    Ref["HsCodeReferenceData<br/>(loads hs-codes.csv)"]
+  end
+
+  subgraph Infra["external systems"]
+    direction LR
+    PG["Postgres 16<br/>+ pgvector"]
+    OAI["OpenAI API<br/>(chat + embeddings)"]
+    CSV["classpath:reference/hs-codes.csv"]
+  end
+
+  Curl --> REST
+  LLM --> MCP
+  REST --> PortIn
+  MCP --> PortIn
+
+  Services --> DomainModel
+  PortOut -.implemented by.-> JPA
+  PortOut -.implemented by.-> Vec
+  PortOut -.implemented by.-> AI
+  PortOut -.implemented by.-> Parser
+  PortOut -.implemented by.-> Ref
+
+  JPA --> PG
+  Vec --> PG
+  AI  --> OAI
+  Ref --> CSV

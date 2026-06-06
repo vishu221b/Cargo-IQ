@@ -1,0 +1,36 @@
+### Maven ###
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IDE ###
+.idea
+*.iws
+*.iml
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Logs ###
+*.log
+logs/
+
+### Secrets ###
+.env
+.env.local
+.env.*.local
+
+### Build outputs ###
+# Root-anchored so these never match Java package directories such as
+# src/main/java/io/cargoiq/adapter/out (the outbound-adapter layer).
+/build/
+/out/
+*.jar
+!.mvn/wrapper/maven-wrapper.jar

@@ -1,0 +1,42 @@
+services:
+
+  postgres:
+    # pgvector ships an official image with PG + pgvector pre-installed.
+    # Tag = postgres version-bookworm + pgvector version.
+    image: pgvector/pgvector:pg16
+    container_name: cargoiq-postgres
+    environment:
+      POSTGRES_DB: cargoiq
+      POSTGRES_USER: cargoiq
+      POSTGRES_PASSWORD: cargoiq
+    ports:
+      - "5432:5432"
+    volumes:
+      - cargoiq-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cargoiq -d cargoiq"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cargoiq-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/cargoiq
+      POSTGRES_USER: cargoiq
+      POSTGRES_PASSWORD: cargoiq
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4o-mini}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+    ports:
+      - "8080:8080"
+
+volumes:
+  cargoiq-pgdata:

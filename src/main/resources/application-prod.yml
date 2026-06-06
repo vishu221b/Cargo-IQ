@@ -1,0 +1,24 @@
+# Prod profile — quiet, locked-down actuator surface, security wiring expected.
+# DO NOT deploy with this profile until you've enabled auth in SecurityConfig.
+
+logging:
+  level:
+    root: WARN
+    io.cargoiq: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: never
+
+# Enable once you've added spring-boot-starter-oauth2-resource-server to pom.xml:
+# spring:
+#   security:
+#     oauth2:
+#       resourceserver:
+#         jwt:
+#           issuer-uri: ${OAUTH2_ISSUER_URI}

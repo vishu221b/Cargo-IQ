@@ -1,0 +1,21 @@
+# Test profile — drives the @SpringBootTest smoke test.
+# Datasource is supplied dynamically by Testcontainers; only need to keep
+# Spring AI happy by stubbing the OpenAI key.
+
+spring:
+  ai:
+    openai:
+      api-key: ${spring.ai.openai.api-key:test-key-not-real}
+    vectorstore:
+      pgvector:
+        # Tests rely on the starter creating the schema fresh in each container.
+        initialize-schema: true
+    mcp:
+      server:
+        # Cut MCP startup noise in tests; tools are still registered as beans.
+        protocol: STREAMABLE
+
+logging:
+  level:
+    org.testcontainers: INFO
+    com.github.dockerjava: WARN

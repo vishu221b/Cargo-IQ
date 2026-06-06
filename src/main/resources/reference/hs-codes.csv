@@ -1,0 +1,51 @@
+# Harmonised System (HS) — representative subset for the cargo-iq scaffold.
+# Source: WCO HS 2022. This is NOT exhaustive — it's a hand-curated slice that
+# covers chapters commonly seen in maritime container trades, so demo queries
+# return something interesting. To load the full schedule, replace this file
+# with the WCO CSV export (5,000+ rows at 6-digit) and bump the
+# HsCodeReferenceData log message expectations in tests.
+#
+# Format: code,description,chapter
+code,description,chapter
+0901,Coffee whether or not roasted or decaffeinated,09
+0902,"Tea, whether or not flavoured",09
+0904,"Pepper of the genus Piper; dried or crushed or ground fruits of the genus Capsicum",09
+1006,Rice,10
+1701,Cane or beet sugar and chemically pure sucrose in solid form,17
+2204,"Wine of fresh grapes, including fortified wines",22
+2710,"Petroleum oils and oils obtained from bituminous minerals, other than crude",27
+3004,"Medicaments consisting of mixed or unmixed products for therapeutic or prophylactic uses",30
+3923,"Articles for the conveyance or packing of goods, of plastics",39
+4011,New pneumatic tyres of rubber,40
+4202,"Trunks, suit-cases, vanity-cases, executive-cases, briefcases",42
+4407,"Wood sawn or chipped lengthwise, sliced or peeled, exceeding 6 mm in thickness",44
+4805,"Other uncoated paper and paperboard, in rolls or sheets",48
+5208,"Woven fabrics of cotton, containing 85% or more by weight of cotton",52
+6109,"T-shirts, singlets and other vests, knitted or crocheted",61
+6204,"Women's or girls' suits, ensembles, jackets, dresses, skirts",62
+6403,"Footwear with outer soles of rubber, plastics, leather and uppers of leather",64
+7113,"Articles of jewellery and parts thereof, of precious metal",71
+7208,"Flat-rolled products of iron or non-alloy steel, hot-rolled, in coils",72
+7308,"Structures and parts of structures of iron or steel (e.g., bridges, towers)",73
+7321,"Stoves, ranges, grates, cookers, barbecues, braziers, gas-rings, of iron or steel",73
+8407,Spark-ignition reciprocating or rotary internal combustion piston engines,84
+8408,Compression-ignition internal combustion piston engines (diesel or semi-diesel),84
+8418,"Refrigerators, freezers and other refrigerating or freezing equipment",84
+8429,"Self-propelled bulldozers, angledozers, graders, levellers, scrapers",84
+8471,"Automatic data processing machines (computers) and units thereof",84
+8473,Parts and accessories of computers and peripherals,84
+8504,"Electrical transformers, static converters (rectifiers) and inductors",85
+8517,"Telephone sets, including telephones for cellular networks; smartphones",85
+8518,"Microphones, loudspeakers, headphones, earphones",85
+8528,"Monitors and projectors, not incorporating television reception apparatus",85
+8542,"Electronic integrated circuits",85
+8703,"Motor cars and other motor vehicles principally designed for the transport of persons",87
+8704,Motor vehicles for the transport of goods,87
+8708,"Parts and accessories of motor vehicles",87
+8711,"Motorcycles (including mopeds) and cycles fitted with an auxiliary motor",87
+8901,"Cruise ships, excursion boats, ferry-boats, cargo ships, barges",89
+8902,Fishing vessels; factory ships and other vessels for processing fishery products,89
+9018,"Instruments and appliances used in medical, surgical, dental or veterinary sciences",90
+9401,"Seats, whether or not convertible into beds, and parts thereof",94
+9403,"Other furniture and parts thereof",94
+9503,"Tricycles, scooters, pedal cars; dolls' carriages; dolls; toys",95

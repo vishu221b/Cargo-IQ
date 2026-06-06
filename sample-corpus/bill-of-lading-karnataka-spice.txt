@@ -1,0 +1,34 @@
+BILL OF LADING
+
+B/L No: HAPL-2024-99431
+Shipper: Karnataka Spice Exporters Pvt Ltd, Mangaluru 575001, India
+Consignee: Spice Route Pty Ltd, 27 Quay St, Newstead QLD 4006, Australia
+Notify Party: Same as consignee
+
+Vessel: HAPAG MUMBAI EXPRESS
+Voyage No: 102E
+Port of Loading: Nhava Sheva (JNPT), India
+Port of Discharge: Brisbane, Australia
+Place of Receipt: Mangaluru CFS
+Place of Delivery: Brisbane Container Terminal
+
+Incoterm: FOB Nhava Sheva
+Freight: Collect (buyer's account)
+Number of Original Bs/L: 3
+
+Marks and Numbers: KSE-2024-Q4-08
+Description of Goods:
+  220 bags black pepper, Tellicherry grade, double-sorted, 25 kg per bag.
+  Total net weight 5,500 kg. HS code 0904.
+  60 bags green cardamom, 8mm bold, 25 kg per bag. Total net weight 1,500 kg.
+Container No: HAPL-7704921 (1x 20'GP)
+Gross Weight: 7,420 kg
+Measurement: 18.2 cbm
+
+Total Invoice Value: USD 48,200.00
+
+Place and Date of Issue: Mangaluru, 2024-10-22
+Carrier: Hapag-Lloyd AG, signed for the Master
+
+Discrepancy noted at Brisbane discharge survey: 4 bags black pepper
+short-landed (weight loss 100 kg). Carrier claim lodged.

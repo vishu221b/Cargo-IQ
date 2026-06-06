@@ -1,0 +1,47 @@
+INCOTERMS 2020 — QUICK REFERENCE NOTES
+(For practitioner use; refer to ICC Publication No. 723E for the canonical text.)
+
+These rules govern the allocation of cost, risk, and responsibility between
+seller and buyer in international sales of goods. They do NOT transfer title
+to the goods, do NOT cover the contract of sale itself, and do NOT replace the
+contract of carriage.
+
+Two groups:
+
+  Group 1 — Rules for any mode or modes of transport (7 rules):
+    EXW — Ex Works
+    FCA — Free Carrier
+    CPT — Carriage Paid To
+    CIP — Carriage and Insurance Paid To
+    DAP — Delivered at Place
+    DPU — Delivered at Place Unloaded
+    DDP — Delivered Duty Paid
+
+  Group 2 — Rules for sea and inland waterway transport only (4 rules):
+    FAS — Free Alongside Ship
+    FOB — Free On Board
+    CFR — Cost and Freight
+    CIF — Cost, Insurance and Freight
+
+Key 2020 changes from Incoterms 2010:
+  - DAT (Delivered At Terminal) renamed to DPU (Delivered at Place Unloaded),
+    broadening the scope from terminals to any place where goods can be
+    unloaded.
+  - CIP now requires Institute Cargo Clauses (A) — all-risks — minimum
+    insurance cover. CIF continues to require only ICC (C) minimum, reflecting
+    bulk-commodity practice. Buyers under CIF should request an upgrade if
+    they need broader cover, and pay the cost difference.
+  - FCA now permits the buyer to instruct the carrier to issue an on-board
+    bill of lading to the seller, removing a long-standing impedance to using
+    FCA (rather than FOB) for containerised cargo.
+  - Security-related obligations and the corresponding allocation of costs
+    are made explicit in each rule.
+
+Common misuses to avoid:
+  - FOB for containerised cargo. Container cargo is handed to the carrier well
+    before loading on board; FCA aligns risk transfer with that reality.
+  - DDP without confirming the seller can act as importer of record in the
+    destination country. In many jurisdictions (incl. Australia) this requires
+    a registered local entity.
+  - CIF and assuming the insurance is comprehensive. It is the minimum cover,
+    deliberately. Specify ICC (A) explicitly if needed and price accordingly.

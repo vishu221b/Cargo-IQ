@@ -1,0 +1,73 @@
+package io.cargoiq.adapter.in.web;
+
+import io.cargoiq.adapter.in.web.dto.QueryRequest;
+import io.cargoiq.adapter.in.web.dto.QueryResponse;
+import io.cargoiq.application.port.in.AnswerQueryUseCase;
+import io.cargoiq.application.port.in.LookupHsCodeUseCase;
+import io.cargoiq.application.port.in.LookupIncotermUseCase;
+import io.cargoiq.domain.model.HsCode;
+import io.cargoiq.domain.model.Query;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * REST adapter for the query side: RAG, INCOTERM lookup, HS-code lookup.
+ *
+ * <p>These three endpoints all also exist as MCP tools — see
+ * {@code adapter/in/mcp/tools}. Same use cases, two inbound adapters. The
+ * controllers and tools never call each other.
+ */
+@RestController
+@RequestMapping("/api/v1")
+@Tag(name = "query", description = "Ask questions, look up INCOTERMS and HS codes")
+public class QueryController {
+
+    private final AnswerQueryUseCase answerQuery;
+    private final LookupIncotermUseCase lookupIncoterm;
+    private final LookupHsCodeUseCase lookupHsCode;
+
+    public QueryController(
+            AnswerQueryUseCase answerQuery,
+            LookupIncotermUseCase lookupIncoterm,
+            LookupHsCodeUseCase lookupHsCode) {
+        this.answerQuery = answerQuery;
+        this.lookupIncoterm = lookupIncoterm;
+        this.lookupHsCode = lookupHsCode;
+    }
+
+    @Operation(summary = "Ask a question grounded in the ingested corpus")
+    @PostMapping("/query")
+    public QueryResponse ask(@Valid @RequestBody QueryRequest req) {
+        var query = new Query(
+                req.query(),
+                req.topKOrDefault(),
+                Optional.ofNullable(req.filterByType()),
+                Optional.ofNullable(req.filterByIncoterm()));
+        return QueryResponse.from(answerQuery.answer(query));
+    }
+
+    @Operation(summary = "Look up an INCOTERM 2020 rule by code (e.g. CIF, FOB, DDP)")
+    @GetMapping("/incoterms/{code}")
+    public LookupIncotermUseCase.IncotermDetail incoterm(@PathVariable String code) {
+        return lookupIncoterm.lookup(code);
+    }
+
+    @Operation(summary = "Look up an HS code by exact code")
+    @GetMapping("/hs-codes/{code}")
+    public HsCode hsCodeByCode(@PathVariable String code) {
+        return lookupHsCode.byCode(code);
+    }
+
+    @Operation(summary = "Search HS codes by description text")
+    @GetMapping("/hs-codes/search")
+    public List<HsCode> hsCodeSearch(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "10") int limit) {
+        return lookupHsCode.search(q, limit);
+    }
+}

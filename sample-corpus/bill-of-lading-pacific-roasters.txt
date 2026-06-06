@@ -1,0 +1,30 @@
+BILL OF LADING
+
+B/L No: MSCU-7841920
+Shipper: Pacific Roasters Ltd, 14 Tannery Lane, Auckland 1010, New Zealand
+Consignee: Brisbane Coffee Co. Pty Ltd, 88 Montague Rd, South Brisbane QLD 4101, Australia
+Notify Party: Same as consignee
+
+Vessel: MAERSK SYDNEY
+Voyage No: 247N
+Port of Loading: Auckland, New Zealand
+Port of Discharge: Brisbane, Australia
+Place of Receipt: Auckland CFS
+Place of Delivery: Brisbane Port Yard
+
+Incoterm: CIF Brisbane
+Freight: Prepaid
+Number of Original Bs/L: 3
+
+Marks and Numbers: PRL-2024-Q4
+Description of Goods:
+  840 cartons green coffee beans, Arabica, Honduran origin, vacuum sealed,
+  10kg per carton. Total net weight 8,400 kg. HS code 0901.
+Container Nos: MSCU-2241870, MSCU-2241893 (2x 20'GP)
+Gross Weight: 9,120 kg
+Measurement: 33.4 cbm
+
+Total Invoice Value: USD 124,500.00
+
+Place and Date of Issue: Auckland, 2024-10-18
+Carrier: Maersk Line A/S, signed for the Master
