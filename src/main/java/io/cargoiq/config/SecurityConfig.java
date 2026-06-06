@@ -16,9 +16,13 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Stateless JWT security + role-based access control.
@@ -52,15 +56,21 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     private final byte[] secret;
+    private final List<String> allowedOrigins;
 
     public SecurityConfig(
-            @Value("${cargoiq.security.jwt.secret:change-me-in-prod-this-is-a-dev-only-secret-please}") String secret) {
+            @Value("${cargoiq.security.jwt.secret:change-me-in-prod-this-is-a-dev-only-secret-please}") String secret,
+            @Value("${cargoiq.web.cors.allowed-origins:http://localhost:5173}") List<String> allowedOrigins) {
         this.secret = secret.getBytes(StandardCharsets.UTF_8);
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // The SPA (Vite dev server / built bundle) is a separate origin, so
+            // CORS is enabled and driven by the allow-list bean below.
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable) // stateless API: no cookies, no CSRF surface
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -83,6 +93,20 @@ public class SecurityConfig {
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                     jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        var config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Location"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 
     @Bean
