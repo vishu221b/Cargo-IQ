@@ -24,6 +24,18 @@ spring.ai.model.embedding: openai      # openai | google-genai | ollama
 
 Set them via `AI_CHAT_PROVIDER` / `AI_EMBEDDING_PROVIDER` (see `.env.example`).
 
+### A note on Gemini
+
+Gemini **chat** is selectable at runtime like the others
+(`AI_CHAT_PROVIDER=google-genai`). Gemini **embeddings** are special-cased: the
+Google starter's embedding autoconfigs are excluded by default (one of them
+binds its own `spring.ai.model.embedding.text` selector with `matchIfMissing`,
+and another builds the Google client at startup regardless of selection). To use
+Gemini embeddings, activate the **`gemini` profile**
+(`SPRING_PROFILES_ACTIVE=dev,gemini`), which lifts the exclusion and selects
+Gemini for both chat and embeddings at 768 dimensions. OpenAI, Anthropic, and
+Ollama have no such quirk and switch purely by the two selector properties.
+
 ## The dimension constraint (important)
 
 A pgvector column is declared with a fixed width, and an embedding model emits a
@@ -53,8 +65,11 @@ SPRING_PROFILES_ACTIVE=dev,ollama   # flips both selectors to ollama, sets dims=
 # Claude for reasoning, OpenAI for embeddings (Anthropic has none):
 AI_CHAT_PROVIDER=anthropic  AI_EMBEDDING_PROVIDER=openai  VECTOR_DIMENSIONS=1536
 
-# Gemini end-to-end:
-AI_CHAT_PROVIDER=google-genai  AI_EMBEDDING_PROVIDER=google-genai  VECTOR_DIMENSIONS=768
+# Gemini chat only, OpenAI embeddings (no profile needed):
+AI_CHAT_PROVIDER=google-genai  AI_EMBEDDING_PROVIDER=openai  VECTOR_DIMENSIONS=1536
+
+# Gemini end-to-end (chat + embeddings) — needs the gemini profile:
+GEMINI_API_KEY=...  SPRING_PROFILES_ACTIVE=dev,gemini
 ```
 
 ## Why this is clean

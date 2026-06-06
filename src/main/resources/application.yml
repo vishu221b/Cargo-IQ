@@ -5,6 +5,23 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
   # ---------------------------------------------------------------------------
+  # The Google GenAI starter is on the classpath so Gemini *chat* is selectable
+  # at runtime (spring.ai.model.chat=google-genai). Its *embedding* autoconfigs,
+  # however, misbehave when Gemini isn't the active embedding provider:
+  #   - GoogleGenAiTextEmbeddingAutoConfiguration uses its own selector
+  #     (spring.ai.model.embedding.text) with matchIfMissing=true, so it would
+  #     create a SECOND EmbeddingModel bean and break pgvector wiring; and
+  #   - GoogleGenAiEmbeddingConnectionAutoConfiguration is gated only by
+  #     @ConditionalOnClass and builds the Google client at startup (throws
+  #     IOException), so it runs even when Gemini is unused.
+  # Exclude both by default; the `gemini` profile lifts this to use Gemini
+  # embeddings end to end. OpenAI / Anthropic / Ollama have no such quirk.
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.google.genai.autoconfigure.embedding.GoogleGenAiEmbeddingConnectionAutoConfiguration
+      - org.springframework.ai.model.google.genai.autoconfigure.embedding.GoogleGenAiTextEmbeddingAutoConfiguration
+
+  # ---------------------------------------------------------------------------
   # Postgres + pgvector. Same database, two consumers:
   #   * JPA / Flyway for the `documents` table
   #   * Spring AI PgVectorStore for the `vector_store` table

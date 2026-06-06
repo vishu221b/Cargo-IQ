@@ -1,0 +1,26 @@
+# ============================================================================
+# `gemini` profile — use Google Gemini for BOTH chat and embeddings.
+#
+#   GEMINI_API_KEY=...  SPRING_PROFILES_ACTIVE=dev,gemini
+#
+# The base profile excludes the Google embedding autoconfigs (see application.yml
+# for why). This profile lifts that exclusion and selects Gemini end to end:
+#   - chat      → google-genai
+#   - embedding → Gemini's text embedding (its own selector, on by default once
+#                 the autoconfig is re-included); OpenAI/Ollama embedding is
+#                 switched off via spring.ai.model.embedding=none.
+#
+# text-embedding-004 is 768-dimensional, so the pgvector column is set to 768.
+# As with any embedding-provider switch, use a fresh DB / drop vector_store.
+# Gemini *chat only* needs no profile — just AI_CHAT_PROVIDER=google-genai.
+# ============================================================================
+spring:
+  autoconfigure:
+    exclude: []
+  ai:
+    model:
+      chat: google-genai
+      embedding: none
+    vectorstore:
+      pgvector:
+        dimensions: 768
