@@ -2,8 +2,10 @@ package io.cargoiq.application.port.out;
 
 import io.cargoiq.domain.model.Document;
 import io.cargoiq.domain.model.DocumentType;
+import io.cargoiq.domain.model.Incoterm;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,4 +27,13 @@ public interface DocumentRepository {
     List<Document> findAll(Optional<DocumentType> filterByType, int limit);
 
     void deleteById(UUID id);
+
+    /** Total number of documents in the corpus. */
+    long count();
+
+    /** Document counts grouped by {@link DocumentType}. */
+    Map<DocumentType, Long> countByType();
+
+    /** Document counts grouped by extracted {@link Incoterm} (nulls excluded). */
+    Map<Incoterm, Long> countByIncoterm();
 }

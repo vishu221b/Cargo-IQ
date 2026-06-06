@@ -23,4 +23,14 @@ public interface DocumentJpaRepository extends JpaRepository<DocumentEntity, UUI
              order by d.ingestedAt desc
             """)
     List<DocumentEntity> findFiltered(@Param("type") DocumentType type, Limit limit);
+
+    @Query("select d.type, count(d) from DocumentEntity d group by d.type")
+    List<Object[]> countGroupedByType();
+
+    @Query("""
+            select d.incoterm, count(d) from DocumentEntity d
+             where d.incoterm is not null
+             group by d.incoterm
+            """)
+    List<Object[]> countGroupedByIncoterm();
 }
