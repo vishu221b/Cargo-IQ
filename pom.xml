@@ -107,20 +107,37 @@
         </dependency>
 
         <!-- =============================================================== -->
-        <!--  Spring AI: model + vector store + MCP server                    -->
+        <!--  Spring AI: models + vector store + MCP server                   -->
         <!--                                                                  -->
-        <!--  Three starters, three concerns:                                 -->
-        <!--    * model-openai      → ChatModel + EmbeddingModel beans        -->
-        <!--    * vector-pgvector   → VectorStore on top of Postgres          -->
-        <!--    * mcp-server-webmvc → exposes @Tool beans over Streamable HTTP-->
+        <!--  vector-pgvector   → VectorStore on top of Postgres             -->
+        <!--  mcp-server-webmvc → exposes @Tool beans over Streamable HTTP   -->
         <!--                                                                  -->
-        <!--  Swap model-openai for model-ollama (or model-anthropic) without -->
-        <!--  touching domain/application code — that's the whole point of    -->
-        <!--  hiding the model behind a port.                                 -->
+        <!--  Four interchangeable model providers ship on the classpath.    -->
+        <!--  Only one chat provider and one embedding provider are active at -->
+        <!--  runtime, chosen by `spring.ai.model.chat` /                     -->
+        <!--  `spring.ai.model.embedding` (see application.yml). Domain and   -->
+        <!--  application code never change — the model lives behind          -->
+        <!--  ChatModelPort and the pgvector adapter:                         -->
+        <!--    * openai       → chat + embeddings (API key)                  -->
+        <!--    * anthropic    → chat only, no embeddings (API key)           -->
+        <!--    * google-genai → chat + embeddings, Gemini AI Studio (API key)-->
+        <!--    * ollama       → chat + embeddings, fully local (no key)      -->
         <!-- =============================================================== -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-openai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-anthropic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-google-genai</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>

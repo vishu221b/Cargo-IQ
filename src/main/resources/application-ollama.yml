@@ -1,0 +1,23 @@
+# ============================================================================
+# `ollama` profile — run the whole app locally with NO API keys.
+#
+#   SPRING_PROFILES_ACTIVE=dev,ollama
+#
+# Prerequisites (one-time):
+#   ollama pull llama3.1            # chat model
+#   ollama pull nomic-embed-text    # embedding model (768 dimensions)
+#
+# This profile flips both model selectors to Ollama and sets the pgvector
+# column width to 768 to match nomic-embed-text. Because the embedding
+# dimension differs from the OpenAI default (1536), use a FRESH database (or
+# drop the vector_store table) when switching to/from this profile — pgvector
+# rejects inserts whose width does not match the column.
+# ============================================================================
+spring:
+  ai:
+    model:
+      chat: ollama
+      embedding: ollama
+    vectorstore:
+      pgvector:
+        dimensions: 768

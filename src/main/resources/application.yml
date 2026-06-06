@@ -28,9 +28,25 @@ spring:
     locations: classpath:db/migration
 
   # ---------------------------------------------------------------------------
-  # Spring AI — model + vector store + MCP server
+  # Spring AI — models + vector store + MCP server
+  #
+  # Four providers are on the classpath; exactly one chat provider and one
+  # embedding provider are active, selected here. Defaults to OpenAI. To run
+  # fully locally with no API keys, activate the `ollama` profile (see
+  # application-ollama.yml) — it flips both selectors to ollama.
+  #
+  # NOTE: the pgvector column dimension MUST match whatever the *active*
+  # embedding model emits, so it is parameterised below (VECTOR_DIMENSIONS).
+  # Switching embedding providers means re-indexing — the dimensions differ
+  # (OpenAI 3-small = 1536, Gemini text-embedding-004 = 768, Ollama
+  # nomic-embed-text = 768). Anthropic has no embedding model, so pair it with
+  # one of the others for `spring.ai.model.embedding`.
   # ---------------------------------------------------------------------------
   ai:
+    model:
+      chat: ${AI_CHAT_PROVIDER:openai}          # openai | anthropic | google-genai | ollama
+      embedding: ${AI_EMBEDDING_PROVIDER:openai} # openai | google-genai | ollama (not anthropic)
+
     openai:
       api-key: ${OPENAI_API_KEY:}
       chat:
@@ -41,11 +57,39 @@ spring:
         options:
           model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
 
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      chat:
+        options:
+          model: ${ANTHROPIC_CHAT_MODEL:claude-sonnet-4-5}
+          temperature: 0.1
+
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:}
+        chat:
+          options:
+            model: ${GEMINI_CHAT_MODEL:gemini-2.5-flash}
+            temperature: 0.1
+        embedding:
+          options:
+            model: ${GEMINI_EMBEDDING_MODEL:text-embedding-004}
+
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL:llama3.1}
+          temperature: 0.1
+      embedding:
+        options:
+          model: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+
     vectorstore:
       pgvector:
         # The starter manages schema for us; pinning here for transparency.
-        # Dimensions MUST match the embedding model. text-embedding-3-small = 1536.
-        dimensions: 1536
+        # Dimensions MUST match the active embedding model (see note above).
+        dimensions: ${VECTOR_DIMENSIONS:1536}
         index-type: HNSW
         distance-type: COSINE_DISTANCE
         initialize-schema: true
