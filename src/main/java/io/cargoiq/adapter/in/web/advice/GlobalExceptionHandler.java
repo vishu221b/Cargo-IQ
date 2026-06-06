@@ -3,6 +3,8 @@ package io.cargoiq.adapter.in.web.advice;
 import io.cargoiq.domain.exception.DocumentNotFoundException;
 import io.cargoiq.domain.exception.HsCodeNotFoundException;
 import io.cargoiq.domain.exception.IncotermNotFoundException;
+import io.cargoiq.domain.exception.InvalidCredentialsException;
+import io.cargoiq.domain.exception.UsernameAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,6 +34,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({IncotermNotFoundException.class, HsCodeNotFoundException.class})
     public ProblemDetail referenceMiss(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ProblemDetail conflict(UsernameAlreadyExistsException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail unauthorized(InvalidCredentialsException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

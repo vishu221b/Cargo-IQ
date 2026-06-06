@@ -73,6 +73,23 @@ spring:
           prompt: true         # stubbed; see adapter/in/mcp/prompts
           completion: false
 
+# ---------------------------------------------------------------------------
+# Application security — stateless JWT + RBAC (see SecurityConfig).
+#   * jwt.secret    — HMAC-SHA256 signing key. MUST be >= 32 bytes and MUST be
+#                     overridden via JWT_SECRET in any non-local environment.
+#   * jwt.ttl       — token lifetime in seconds (default 1 hour).
+#   * bootstrap-admin — only seeded under the `dev` profile (see DataInitializer).
+# ---------------------------------------------------------------------------
+cargoiq:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:change-me-in-prod-this-is-a-dev-only-secret-please}
+      issuer: ${JWT_ISSUER:cargo-iq}
+      ttl-seconds: ${JWT_TTL_SECONDS:3600}
+    bootstrap-admin:
+      username: ${BOOTSTRAP_ADMIN_USERNAME:admin}
+      password: ${BOOTSTRAP_ADMIN_PASSWORD:admin12345}
+
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful

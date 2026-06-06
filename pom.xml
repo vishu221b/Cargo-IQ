@@ -66,6 +66,24 @@
         </dependency>
 
         <!-- =============================================================== -->
+        <!--  Security: stateless JWT auth + RBAC.                            -->
+        <!--                                                                  -->
+        <!--    * starter-security            → filter chain, BCrypt, RBAC    -->
+        <!--    * oauth2-resource-server       → validates bearer JWTs and    -->
+        <!--                                     brings Nimbus JOSE for the    -->
+        <!--                                     JwtEncoder/JwtDecoder beans   -->
+        <!--                                     (see SecurityConfig).         -->
+        <!-- =============================================================== -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <!-- =============================================================== -->
         <!--  Persistence: Postgres + JPA + Flyway. pgvector lives inside     -->
         <!--  Postgres as an extension; the starter below wires the           -->
         <!--  VectorStore on top of the same DataSource.                      -->
@@ -152,6 +170,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
