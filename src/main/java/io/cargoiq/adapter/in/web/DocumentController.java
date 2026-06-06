@@ -2,12 +2,14 @@ package io.cargoiq.adapter.in.web;
 
 import io.cargoiq.adapter.in.web.dto.DocumentResponse;
 import io.cargoiq.adapter.in.web.dto.IngestRequest;
+import io.cargoiq.application.port.in.DeleteDocumentUseCase;
 import io.cargoiq.application.port.in.IngestDocumentUseCase;
 import io.cargoiq.application.port.in.ListDocumentsUseCase;
 import io.cargoiq.domain.model.DocumentType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,8 @@ import java.util.UUID;
  * <p>This controller is intentionally thin — it does DTO ↔ domain conversion
  * and HTTP status mapping, nothing else. Business decisions belong in
  * {@code IngestDocumentService} et al., not here.
+ *
+ * @author Vishal Dogra
  */
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -30,10 +34,14 @@ public class DocumentController {
 
     private final IngestDocumentUseCase ingest;
     private final ListDocumentsUseCase listing;
+    private final DeleteDocumentUseCase deletion;
 
-    public DocumentController(IngestDocumentUseCase ingest, ListDocumentsUseCase listing) {
+    public DocumentController(IngestDocumentUseCase ingest,
+                              ListDocumentsUseCase listing,
+                              DeleteDocumentUseCase deletion) {
         this.ingest = ingest;
         this.listing = listing;
+        this.deletion = deletion;
     }
 
     @Operation(summary = "Ingest a document into the corpus (chunks, embeds, indexes)")
@@ -61,5 +69,12 @@ public class DocumentController {
     @GetMapping("/{id}")
     public DocumentResponse byId(@PathVariable UUID id) {
         return DocumentResponse.from(listing.byId(id));
+    }
+
+    @Operation(summary = "Delete a document and all of its indexed chunks (ADMIN only)")
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) {
+        deletion.delete(id);
     }
 }
