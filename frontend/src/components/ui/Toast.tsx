@@ -78,10 +78,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 className="glass-strong pointer-events-auto flex items-start gap-3 rounded-xl px-4 py-3 shadow-card"
               >
                 <Icon className={cn("mt-0.5 h-5 w-5 shrink-0", ACCENT[t.kind])} />
-                <p className="flex-1 text-sm text-slate-200">{t.message}</p>
+                <p className="flex-1 text-sm text-fg">{t.message}</p>
                 <button
                   onClick={() => remove(t.id)}
-                  className="text-slate-500 transition hover:text-slate-300"
+                  className="text-faint transition hover:text-fg"
                   aria-label="Dismiss"
                 >
                   <X className="h-4 w-4" />

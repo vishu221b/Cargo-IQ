@@ -3,31 +3,51 @@
 @tailwind utilities;
 
 @layer base {
+  /* Dark is the default theme; .light overrides the tokens. Values are raw
+     "r g b" triplets so Tailwind's <alpha-value> works (rgb(var(--x) / 0.5)). */
   :root {
+    --bg: 7 9 18; /* ink-950 */
+    --surface: 15 19 32; /* ink-850 */
+    --surface-2: 20 26 43; /* ink-800 */
+    --line: 255 255 255; /* borders/subtle fills, used at low alpha */
+    --fg: 226 232 240; /* slate-200 */
+    --muted: 148 163 184; /* slate-400 */
+    --faint: 100 116 139; /* slate-500 */
     color-scheme: dark;
   }
+  .light {
+    --bg: 247 248 251;
+    --surface: 255 255 255;
+    --surface-2: 241 245 249; /* slate-100 */
+    --line: 15 23 42; /* slate-900 at low alpha = soft dark borders */
+    --fg: 15 23 42; /* slate-900 */
+    --muted: 71 85 105; /* slate-600 */
+    --faint: 100 116 139; /* slate-500 */
+    color-scheme: light;
+  }
+
   html,
   body,
   #root {
     height: 100%;
   }
   body {
-    @apply bg-ink-950 text-slate-200 font-sans antialiased;
+    @apply bg-bg text-fg font-sans antialiased;
     font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
-  /* Refined, low-contrast scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-ink-600 rounded-full;
+    @apply bg-line/20 rounded-full;
     border: 2px solid transparent;
     background-clip: content-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-ink-700;
+    @apply bg-line/30;
   }
   ::selection {
     background: rgba(124, 92, 255, 0.35);
@@ -35,27 +55,25 @@
 }
 
 @layer components {
-  /* Glassmorphic panel used across cards, the sidebar, modals. */
   .glass {
-    @apply bg-ink-900/60 backdrop-blur-xl border border-white/[0.06];
+    @apply bg-surface/60 backdrop-blur-xl border border-line/[0.08];
   }
   .glass-strong {
-    @apply bg-ink-850/80 backdrop-blur-2xl border border-white/[0.08];
+    @apply bg-surface/80 backdrop-blur-2xl border border-line/[0.10];
   }
-  /* Subtle gradient hairline that reads as a premium divider. */
   .hairline {
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(255, 255, 255, 0.08),
+      rgb(var(--line) / 0.1),
       transparent
     );
   }
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #c4b5fd 0%, #7c5cff 45%, #22d3ee 100%);
+    background-image: linear-gradient(135deg, #a78bfa 0%, #7c5cff 45%, #22d3ee 100%);
   }
   .focus-ring {
-    @apply outline-none ring-2 ring-accent/60 ring-offset-2 ring-offset-ink-950;
+    @apply outline-none ring-2 ring-accent/60 ring-offset-2 ring-offset-bg;
   }
 }

@@ -71,8 +71,8 @@ export default function Documents() {
     <div className="space-y-7">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-white">Documents</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-3xl font-semibold tracking-tight text-fg">Documents</h1>
+          <p className="mt-1 text-sm text-muted">
             The ingested corpus — chunked, embedded and searchable.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function Documents() {
       </header>
 
       <div className="flex items-center gap-3">
-        <Filter className="h-4 w-4 text-slate-500" />
+        <Filter className="h-4 w-4 text-faint" />
         <div className="w-56">
           <Select value={filter} onChange={(e) => setFilter(e.target.value as DocumentType | "")}>
             <option value="">All types</option>
@@ -114,13 +114,13 @@ export default function Documents() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(i * 0.03, 0.3) }}
             >
-              <Card className="flex items-start gap-4 p-4 transition hover:border-white/[0.12]">
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/[0.05] text-slate-300">
+              <Card className="flex items-start gap-4 p-4 transition hover:border-line/[0.12]">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-line/[0.05] text-fg">
                   <FileText className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="truncate font-medium text-slate-100">{doc.title}</h3>
+                    <h3 className="truncate font-medium text-fg">{doc.title}</h3>
                     <Badge tone={TYPE_TONE[doc.type] ?? "default"}>{humanize(doc.type)}</Badge>
                     {doc.metadata.incoterm && (
                       <Badge tone="cyan">
@@ -128,7 +128,7 @@ export default function Documents() {
                       </Badge>
                     )}
                   </div>
-                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-faint">
                     <span>{doc.chunkCount} chunks</span>
                     {doc.metadata.vesselName && <span>Vessel: {doc.metadata.vesselName}</span>}
                     {doc.metadata.portOfDischarge && <span>→ {doc.metadata.portOfDischarge}</span>}
@@ -143,7 +143,7 @@ export default function Documents() {
                 {isAdmin && (
                   <button
                     onClick={() => remove(doc)}
-                    className="rounded-lg p-2 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-300"
+                    className="rounded-lg p-2 text-faint transition hover:bg-rose-500/10 hover:text-rose-300"
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -174,16 +174,16 @@ export default function Documents() {
 function EmptyState({ isAdmin, onIngest }: { isAdmin: boolean; onIngest: () => void }) {
   return (
     <Card className="grid place-items-center gap-3 px-6 py-16 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/[0.05] text-slate-400">
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-line/[0.05] text-muted">
         <PackageOpen className="h-7 w-7" />
       </div>
-      <p className="text-slate-300">No documents in the corpus yet.</p>
+      <p className="text-fg">No documents in the corpus yet.</p>
       {isAdmin ? (
         <Button variant="subtle" icon={<Upload className="h-4 w-4" />} onClick={onIngest}>
           Ingest your first document
         </Button>
       ) : (
-        <p className="text-sm text-slate-500">Ask an admin to ingest documents.</p>
+        <p className="text-sm text-faint">Ask an admin to ingest documents.</p>
       )}
     </Card>
   );
@@ -220,7 +220,7 @@ function IngestModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 grid place-items-center bg-ink-950/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 grid place-items-center bg-bg/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <motion.div
@@ -232,8 +232,8 @@ function IngestModal({
         className="glass-strong w-full max-w-lg rounded-2xl p-6 shadow-card"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Ingest a document</h2>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-500 hover:bg-white/[0.05] hover:text-slate-300">
+          <h2 className="text-lg font-semibold text-fg">Ingest a document</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-faint hover:bg-line/[0.05] hover:text-fg">
             <X className="h-5 w-5" />
           </button>
         </div>

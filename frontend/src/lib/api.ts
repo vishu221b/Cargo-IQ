@@ -113,6 +113,8 @@ export const api = {
     query: string;
     topK?: number;
     filterByType?: DocumentType | null;
+    provider?: string;
+    model?: string;
   }) =>
     request<QueryResult>("/api/v1/query", {
       method: "POST",

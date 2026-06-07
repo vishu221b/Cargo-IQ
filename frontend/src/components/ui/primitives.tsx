@@ -26,9 +26,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
   primary:
     "bg-accent text-white shadow-glow hover:bg-accent-soft active:translate-y-px",
   ghost:
-    "bg-transparent text-slate-300 hover:bg-white/[0.05] hover:text-white",
+    "bg-transparent text-muted hover:bg-line/[0.06] hover:text-fg",
   subtle:
-    "bg-white/[0.05] text-slate-200 border border-white/[0.08] hover:bg-white/[0.08]",
+    "bg-line/[0.05] text-fg border border-line/[0.08] hover:bg-line/[0.08]",
   danger:
     "bg-rose-500/90 text-white hover:bg-rose-500 active:translate-y-px",
 };
@@ -76,8 +76,8 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 /* ----------------------------- Inputs ----------------------------- */
 
 const FIELD =
-  "w-full rounded-xl bg-ink-850/70 border border-white/[0.08] px-3.5 py-2.5 text-sm text-slate-100 " +
-  "placeholder:text-slate-500 transition focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/30";
+  "w-full rounded-xl bg-surface/70 border border-line/[0.08] px-3.5 py-2.5 text-sm text-fg " +
+  "placeholder:text-faint transition focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/30";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className, ...props }, ref) => (
@@ -107,9 +107,9 @@ Select.displayName = "Select";
 export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-xs font-medium uppercase tracking-wider text-slate-400">{label}</span>
+      <span className="text-xs font-medium uppercase tracking-wider text-muted">{label}</span>
       {children}
-      {hint && <span className="block text-xs text-slate-500">{hint}</span>}
+      {hint && <span className="block text-xs text-faint">{hint}</span>}
     </label>
   );
 }
@@ -117,7 +117,7 @@ export function Field({ label, children, hint }: { label: string; children: Reac
 /* ----------------------------- Badge ------------------------------ */
 
 const BADGE_TONES = {
-  default: "bg-white/[0.06] text-slate-300 border-white/[0.08]",
+  default: "bg-line/[0.06] text-fg border-line/[0.08]",
   accent: "bg-accent/15 text-accent-glow border-accent/30",
   cyan: "bg-cyanish/10 text-cyanish border-cyanish/30",
   emerald: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",

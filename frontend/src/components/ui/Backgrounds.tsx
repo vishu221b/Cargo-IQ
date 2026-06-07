@@ -19,7 +19,7 @@ export function AuroraBackground({
         <div className="absolute -left-1/4 -top-1/4 h-[60vh] w-[60vh] animate-aurora rounded-full bg-accent/25 blur-[120px]" />
         <div className="absolute -right-1/4 top-1/3 h-[55vh] w-[55vh] animate-aurora rounded-full bg-cyanish/20 blur-[120px] [animation-delay:-6s]" />
         <div className="absolute bottom-0 left-1/3 h-[45vh] w-[45vh] animate-aurora rounded-full bg-fuchsia-500/15 blur-[120px] [animation-delay:-12s]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,transparent_30%,rgba(7,9,18,0.9))]" />
+        <div className="absolute inset-0 [background:radial-gradient(ellipse_at_top,transparent_30%,rgb(var(--bg)/0.9))]" />
       </div>
       {children}
     </div>
@@ -32,7 +32,7 @@ export function GridPattern({ className }: { className?: string }) {
     <div
       className={cn(
         "pointer-events-none absolute inset-0 -z-10 opacity-[0.4]",
-        "[background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)]",
+        "[background-image:radial-gradient(rgb(var(--line)/0.10)_1px,transparent_1px)]",
         "[background-size:22px_22px]",
         "[mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]",
         className,

@@ -44,10 +44,10 @@ export default function Dashboard() {
     <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-slate-400">
-            Welcome back, <span className="text-slate-200">{user?.username}</span>
+          <p className="text-sm text-muted">
+            Welcome back, <span className="text-fg">{user?.username}</span>
           </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white">
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-fg">
             Corpus <span className="text-gradient">overview</span>
           </h1>
         </div>
@@ -160,10 +160,10 @@ function StatCard({
         >
           <Icon className="h-5 w-5" />
         </div>
-        <p className="mt-4 text-3xl font-semibold tracking-tight text-white">
+        <p className="mt-4 text-3xl font-semibold tracking-tight text-fg">
           <CountUp value={value} />
         </p>
-        <p className="mt-1 text-sm text-slate-400">{label}</p>
+        <p className="mt-1 text-sm text-muted">{label}</p>
       </Card>
     </motion.div>
   );
@@ -183,20 +183,20 @@ function Breakdown({
   const max = Math.max(1, ...entries.map(([, v]) => v));
   return (
     <Card className="p-6">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
         {title}
       </h2>
       <div className="mt-5 space-y-3.5">
         {entries.length === 0 ? (
-          <p className="text-sm text-slate-500">{empty}</p>
+          <p className="text-sm text-faint">{empty}</p>
         ) : (
           entries.map(([label, value], i) => (
             <div key={label} className="space-y-1.5">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300">{label}</span>
-                <span className="font-mono text-slate-400">{value}</span>
+                <span className="text-fg">{label}</span>
+                <span className="font-mono text-muted">{value}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white/[0.05]">
+              <div className="h-2 overflow-hidden rounded-full bg-line/[0.05]">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(value / max) * 100}%` }}
@@ -225,15 +225,15 @@ function QuickAction({
 }) {
   return (
     <Link to={to} className="group">
-      <Card className="flex items-center gap-4 p-5 transition hover:border-white/[0.12] hover:bg-ink-850/70">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/[0.05] text-slate-300 transition group-hover:text-white">
+      <Card className="flex items-center gap-4 p-5 transition hover:border-line/[0.12] hover:bg-surface/70">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-line/[0.05] text-fg transition group-hover:text-fg">
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-200">{label}</p>
-          <p className="text-xs text-slate-500">{sub}</p>
+          <p className="text-sm font-medium text-fg">{label}</p>
+          <p className="text-xs text-faint">{sub}</p>
         </div>
-        <ArrowUpRight className="h-4 w-4 text-slate-600 transition group-hover:text-accent-glow" />
+        <ArrowUpRight className="h-4 w-4 text-faint transition group-hover:text-accent-glow" />
       </Card>
     </Link>
   );

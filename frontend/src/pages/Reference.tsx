@@ -15,13 +15,13 @@ export default function Reference() {
   return (
     <div className="space-y-7">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-white">Reference</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <h1 className="text-3xl font-semibold tracking-tight text-fg">Reference</h1>
+        <p className="mt-1 text-sm text-muted">
           Deterministic lookups — INCOTERMS 2020 rules and the HS tariff schedule. No LLM in the loop.
         </p>
       </header>
 
-      <div className="inline-grid grid-cols-2 gap-1 rounded-xl bg-ink-850/60 p-1">
+      <div className="inline-grid grid-cols-2 gap-1 rounded-xl bg-surface/60 p-1">
         {(
           [
             ["incoterms", "INCOTERMS 2020"],
@@ -31,12 +31,12 @@ export default function Reference() {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className="relative rounded-lg px-5 py-2 text-sm font-medium text-slate-300 transition"
+            className="relative rounded-lg px-5 py-2 text-sm font-medium text-fg transition"
           >
             {tab === key && (
               <motion.span
                 layoutId="ref-tab"
-                className="absolute inset-0 -z-10 rounded-lg bg-white/[0.08] ring-1 ring-white/[0.08]"
+                className="absolute inset-0 -z-10 rounded-lg bg-line/[0.08] ring-1 ring-line/[0.08]"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
@@ -90,7 +90,7 @@ function IncotermPanel() {
               "rounded-lg border px-3 py-1.5 font-mono text-sm transition",
               code === c
                 ? "border-accent/40 bg-accent/15 text-accent-glow"
-                : "border-white/[0.08] bg-white/[0.03] text-slate-300 hover:border-white/[0.16] hover:text-white",
+                : "border-line/[0.08] bg-line/[0.03] text-fg hover:border-line/[0.16] hover:text-fg",
             )}
           >
             {c}
@@ -99,7 +99,7 @@ function IncotermPanel() {
       </div>
 
       {busy && (
-        <Card className="flex items-center gap-3 p-6 text-slate-400">
+        <Card className="flex items-center gap-3 p-6 text-muted">
           <Spinner /> Loading rule…
         </Card>
       )}
@@ -111,7 +111,7 @@ function IncotermPanel() {
               <span className="rounded-lg bg-gradient-to-br from-accent to-cyanish px-3 py-1.5 font-mono text-sm font-semibold text-white shadow-glow">
                 {detail.rule}
               </span>
-              <h2 className="text-lg font-medium text-white">{detail.summary}</h2>
+              <h2 className="text-lg font-medium text-fg">{detail.summary}</h2>
             </div>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <Detail icon={Ship} label="Seller obligations" value={detail.sellerObligations} />
@@ -119,11 +119,11 @@ function IncotermPanel() {
               <Detail icon={ArrowRightLeft} label="Risk transfer" value={detail.riskTransfer} />
               <Detail icon={Coins} label="Cost transfer" value={detail.costTransfer} />
             </div>
-            <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-              <div className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+            <div className="mt-4 rounded-xl border border-line/[0.06] bg-line/[0.02] p-4">
+              <div className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-faint">
                 <Truck className="h-3.5 w-3.5" /> Typical use
               </div>
-              <p className="text-sm text-slate-300">{detail.typicalUseCase}</p>
+              <p className="text-sm text-fg">{detail.typicalUseCase}</p>
             </div>
           </Card>
         </motion.div>
@@ -142,11 +142,11 @@ function Detail({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-      <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+    <div className="rounded-xl border border-line/[0.06] bg-line/[0.02] p-4">
+      <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-faint">
         <Icon className="h-3.5 w-3.5" /> {label}
       </div>
-      <p className="text-sm leading-relaxed text-slate-300">{value}</p>
+      <p className="text-sm leading-relaxed text-fg">{value}</p>
     </div>
   );
 }
@@ -182,7 +182,7 @@ function HsPanel() {
     <div className="space-y-5">
       <form onSubmit={search} className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
           <Input
             value={term}
             onChange={(e) => setTerm(e.target.value)}
@@ -196,7 +196,7 @@ function HsPanel() {
       </form>
 
       {results && results.length === 0 && (
-        <Card className="p-5 text-sm text-slate-400">No HS codes matched that query.</Card>
+        <Card className="p-5 text-sm text-muted">No HS codes matched that query.</Card>
       )}
 
       {results && results.length > 0 && (
@@ -209,12 +209,12 @@ function HsPanel() {
               transition={{ delay: i * 0.04 }}
             >
               <Card className="flex items-center gap-4 p-4">
-                <span className="rounded-lg bg-white/[0.05] px-3 py-2 font-mono text-sm text-cyanish">
+                <span className="rounded-lg bg-line/[0.05] px-3 py-2 font-mono text-sm text-cyanish">
                   {hs.code}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-slate-200">{hs.description}</p>
-                  <p className="text-xs text-slate-500">Chapter {hs.chapter}</p>
+                  <p className="text-sm text-fg">{hs.description}</p>
+                  <p className="text-xs text-faint">Chapter {hs.chapter}</p>
                 </div>
                 <Badge tone="cyan">HS {hs.code.slice(0, 2)}</Badge>
               </Card>

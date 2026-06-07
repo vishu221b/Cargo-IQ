@@ -6,6 +6,7 @@ import { useAuth } from "@/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { AuroraBackground, Spotlight } from "@/components/ui/Backgrounds";
 import { Button, Field, Input } from "@/components/ui/primitives";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import { ApiError } from "@/lib/api";
 
 type Mode = "login" | "register";
@@ -51,6 +52,9 @@ export default function Login() {
   return (
     <AuroraBackground className="grid min-h-screen place-items-center px-5">
       <Spotlight />
+      <div className="absolute right-5 top-5 z-10">
+        <ThemeToggle />
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
@@ -62,24 +66,24 @@ export default function Login() {
             <Boxes className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-tight text-white">cargo-iq</h1>
-            <p className="text-xs text-slate-400">
+            <h1 className="text-lg font-semibold tracking-tight text-fg">cargo-iq</h1>
+            <p className="text-xs text-muted">
               Grounded intelligence for trade documents
             </p>
           </div>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-ink-850/60 p-1">
+        <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-surface/60 p-1">
           {(["login", "register"] as Mode[]).map((m) => (
             <button
               key={m}
               onClick={() => setMode(m)}
-              className="relative rounded-lg py-2 text-sm font-medium capitalize text-slate-300 transition"
+              className="relative rounded-lg py-2 text-sm font-medium capitalize text-fg transition"
             >
               {mode === m && (
                 <motion.span
                   layoutId="auth-tab"
-                  className="absolute inset-0 -z-10 rounded-lg bg-white/[0.08] ring-1 ring-white/[0.08]"
+                  className="absolute inset-0 -z-10 rounded-lg bg-line/[0.08] ring-1 ring-line/[0.08]"
                   transition={{ type: "spring", stiffness: 380, damping: 30 }}
                 />
               )}
@@ -126,9 +130,9 @@ export default function Login() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-5 text-center text-xs text-slate-500"
+              className="mt-5 text-center text-xs text-faint"
             >
-              Dev bootstrap admin: <span className="font-mono text-slate-400">admin / admin12345</span>
+              Dev bootstrap admin: <span className="font-mono text-muted">admin / admin12345</span>
             </motion.p>
           )}
         </AnimatePresence>

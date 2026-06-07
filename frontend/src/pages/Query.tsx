@@ -12,6 +12,8 @@ import { api, ApiError } from "@/lib/api";
 import { DOCUMENT_TYPES, type DocumentType, type QueryResult } from "@/lib/types";
 import { useToast } from "@/components/ui/Toast";
 import { Badge, Button, Card, Select, Spinner, Textarea } from "@/components/ui/primitives";
+import ModelPicker from "@/components/ModelPicker";
+import { loadModelChoice, type ModelChoice } from "@/lib/models";
 import { humanize } from "@/lib/utils";
 
 const SUGGESTIONS = [
@@ -24,6 +26,7 @@ export default function Query() {
   const toast = useToast();
   const [q, setQ] = useState("");
   const [type, setType] = useState<DocumentType | "">("");
+  const [model, setModel] = useState<ModelChoice>(loadModelChoice);
   const [result, setResult] = useState<QueryResult | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -34,7 +37,13 @@ export default function Query() {
     setBusy(true);
     setResult(null);
     try {
-      const res = await api.query({ query: text, filterByType: type || null, topK: 6 });
+      const res = await api.query({
+        query: text,
+        filterByType: type || null,
+        topK: 6,
+        provider: model.provider,
+        model: model.model,
+      });
       setResult(res);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Query failed");
@@ -46,10 +55,10 @@ export default function Query() {
   return (
     <div className="space-y-7">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-white">
+        <h1 className="text-3xl font-semibold tracking-tight text-fg">
           Ask the <span className="text-gradient">corpus</span>
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-muted">
           Retrieval-augmented answers, grounded in your documents and cited back to the source.
         </p>
       </header>
@@ -65,7 +74,10 @@ export default function Query() {
           placeholder="Ask anything about the ingested shipping documents…"
           className="border-0 bg-transparent px-0 text-base focus:ring-0"
         />
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-3">
+        <div className="mt-3 border-t border-line/[0.06] pt-4">
+          <ModelPicker value={model} onChange={setModel} />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <div className="w-52">
             <Select value={type} onChange={(e) => setType(e.target.value as DocumentType | "")}>
               <option value="">Search all types</option>
@@ -78,7 +90,7 @@ export default function Query() {
           </div>
           <Button onClick={() => run()} loading={busy} icon={<Sparkles className="h-4 w-4" />}>
             Ask
-            <kbd className="ml-1 hidden rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70 sm:inline-flex">
+            <kbd className="ml-1 hidden rounded bg-line/10 px-1.5 py-0.5 text-[10px] text-white/70 sm:inline-flex">
               ⌘↵
             </kbd>
           </Button>
@@ -87,13 +99,13 @@ export default function Query() {
 
       {!result && !busy && (
         <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Try</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-faint">Try</p>
           <div className="flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 onClick={() => run(s)}
-                className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-left text-sm text-slate-300 transition hover:border-accent/40 hover:text-white"
+                className="rounded-full border border-line/[0.08] bg-line/[0.03] px-3.5 py-1.5 text-left text-sm text-fg transition hover:border-accent/40 hover:text-fg"
               >
                 {s}
               </button>
@@ -103,7 +115,7 @@ export default function Query() {
       )}
 
       {busy && (
-        <Card className="flex items-center gap-3 p-6 text-slate-400">
+        <Card className="flex items-center gap-3 p-6 text-muted">
           <Spinner /> Retrieving context and generating a grounded answer…
         </Card>
       )}
@@ -119,7 +131,7 @@ export default function Query() {
           >
             <Card className="p-6">
               <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-slate-400">
+                <div className="flex items-center gap-2 text-sm text-muted">
                   <CornerDownLeft className="h-4 w-4" /> Answer
                 </div>
                 {result.grounded ? (
@@ -132,14 +144,14 @@ export default function Query() {
                   </Badge>
                 )}
               </div>
-              <p className="whitespace-pre-wrap leading-relaxed text-slate-100">
+              <p className="whitespace-pre-wrap leading-relaxed text-fg">
                 {result.answer}
               </p>
             </Card>
 
             {result.citations.length > 0 && (
               <div className="space-y-3">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                <p className="text-xs font-medium uppercase tracking-wider text-faint">
                   Citations
                 </p>
                 <div className="grid gap-3">
@@ -152,17 +164,17 @@ export default function Query() {
                     >
                       <Card className="p-4">
                         <div className="mb-2 flex items-center justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-2 text-sm text-slate-300">
+                          <div className="flex min-w-0 items-center gap-2 text-sm text-fg">
                             <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-accent/15 text-xs font-semibold text-accent-glow">
                               {i + 1}
                             </span>
-                            <FileText className="h-3.5 w-3.5 shrink-0 text-slate-500" />
+                            <FileText className="h-3.5 w-3.5 shrink-0 text-faint" />
                             <span className="truncate">{c.documentTitle}</span>
                           </div>
                           <Badge>chunk {c.chunkSequence} · {(c.score * 100).toFixed(0)}%</Badge>
                         </div>
-                        <p className="flex gap-2 text-sm leading-relaxed text-slate-400">
-                          <Quote className="mt-0.5 h-4 w-4 shrink-0 text-slate-600" />
+                        <p className="flex gap-2 text-sm leading-relaxed text-muted">
+                          <Quote className="mt-0.5 h-4 w-4 shrink-0 text-faint" />
                           <span className="line-clamp-4">{c.snippet}</span>
                         </p>
                       </Card>
