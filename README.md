@@ -1,71 +1,101 @@
-# cargo-iq
+<div align="center">
 
-> RAG + MCP for international cargo, freight, and trade-finance documents.
-> Built with Spring Boot 3.4, Spring AI 1.1, pgvector, and Java 21.
+# 🚢 cargo-iq
 
-`cargo-iq` ingests shipping documents — Bills of Lading, Commercial Invoices,
-Letters of Credit, Charter Parties, and reference material like INCOTERMS 2020
-— and lets you ask grounded, citation-backed questions about them. The same
-capabilities are exposed twice:
+**Grounded RAG intelligence for international cargo, freight & trade-finance documents — exposed as both a REST API and an embedded MCP server.**
 
-- as a **REST API** (OpenAPI/Swagger UI on `/swagger`), and
-- as an embedded **MCP server** (Model Context Protocol) on `POST /mcp`, so
-  LLM clients like Claude Desktop, Cursor, or the MCP Inspector can invoke
-  the same tools directly.
+[![CI](https://github.com/vishu221b/Cargo-IQ/actions/workflows/ci.yml/badge.svg)](https://github.com/vishu221b/Cargo-IQ/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
+[![Java 21](https://img.shields.io/badge/Java-21-ED8B00.svg?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
+[![Spring Boot 3.4](https://img.shields.io/badge/Spring_Boot-3.4-6DB33F.svg?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring AI 1.1](https://img.shields.io/badge/Spring_AI-1.1-6DB33F.svg)](https://spring.io/projects/spring-ai)
+[![pgvector](https://img.shields.io/badge/pgvector-Postgres_16-336791.svg?logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB.svg?logo=react&logoColor=black)](https://react.dev)
+[![MCP](https://img.shields.io/badge/MCP-Streamable_HTTP-7C5CFF.svg)](https://modelcontextprotocol.io)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
 
-The codebase is laid out as a strict **hexagonal architecture** (Ports &
-Adapters). See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the deep walkthrough
-— that document is the project's source of truth and the place to look first.
+[Quick start](#-quick-start) · [Architecture](./ARCHITECTURE.md) · [Web UI](#-web-ui) · [REST API](#-rest-api) · [MCP](#-mcp-tools) · [Model providers](./docs/model-providers.md)
+
+</div>
 
 ---
 
-## Stack
+`cargo-iq` ingests shipping documents — Bills of Lading, Commercial Invoices,
+Letters of Credit, Charter Parties, and reference material like INCOTERMS 2020 —
+and answers grounded, citation-backed questions about them. The same capabilities
+are served two ways: a **REST API** (OpenAPI/Swagger UI) and an embedded **MCP
+server** (Model Context Protocol) so LLM clients like Claude Desktop, Cursor, or
+the MCP Inspector can invoke the tools directly.
+
+It is built as a strict **hexagonal architecture** (Ports & Adapters) and **runs
+with no API key out of the box** — a built-in mock model makes the whole pipeline
+demonstrable offline, while OpenAI / Anthropic / Gemini / Ollama can be selected
+per request.
+
+> 📐 [`ARCHITECTURE.md`](./ARCHITECTURE.md) is the source of truth for *why* the
+> code is shaped the way it is — start there.
+
+## ✨ Highlights
+
+- **RAG done properly** — retrieve → ground → answer with `[#N]` citations and an
+  explicit *grounded / ungrounded* signal on every response.
+- **Two front doors, one core** — REST controllers and MCP `@Tool`s are thin
+  inbound adapters over the *same* use cases. Zero duplicated business logic.
+- **Runs with zero setup** — a mock embedding (lexical feature-hashing) + mock
+  chat answer offline; swap to a real provider per request.
+- **Pluggable models** — OpenAI, Anthropic (Claude), Google Gemini, and Ollama
+  (any locally-pulled model, e.g. `gemma2:9b`), chosen from the UI or the API.
+- **Secure by default** — stateless JWT auth with role-based access control
+  (USER / ADMIN) via Spring Security.
+- **Modern web client** — React + Vite + Tailwind SPA with a light/dark theme and
+  a per-request model picker.
+- **Production-shaped** — Flyway migrations, Actuator/Micrometer/Prometheus,
+  OpenAPI, a multi-stage non-root Dockerfile, and CI on GitHub Actions.
+
+## 🧱 Tech stack
 
 | Layer | Choice |
 |---|---|
-| Runtime | Java 21 |
-| Framework | Spring Boot 3.4 |
-| AI | Spring AI 1.1 (`starter-model-openai`, `starter-vector-store-pgvector`, `starter-mcp-server-webmvc`) |
-| Vector store | pgvector inside Postgres (HNSW + cosine) |
-| Relational store | Postgres 16 |
+| Language / runtime | Java 21 |
+| Framework | Spring Boot 3.4 · Spring Security · Spring Data JPA |
+| AI | Spring AI 1.1 (OpenAI · Anthropic · Google GenAI · Ollama · pgvector · MCP server) |
+| Vector store | pgvector in Postgres 16 (HNSW + cosine) |
 | Migrations | Flyway |
 | Observability | Actuator + Micrometer + Prometheus |
 | API docs | springdoc-openapi (Swagger UI at `/swagger`) |
-| Tests | JUnit 5 + AssertJ + Testcontainers |
-| Container | Multi-stage Dockerfile (Temurin 21, non-root) |
-| CI | GitHub Actions |
+| Web client | React 18 · TypeScript · Vite · Tailwind · framer-motion |
+| Tests | JUnit 5 · AssertJ · Testcontainers |
+| Packaging / CI | Multi-stage Dockerfile (Temurin 21, non-root) · GitHub Actions |
 
----
+## 🚀 Quick start
 
-## Quick start
-
-### 1. Bring up Postgres + the app
+### 1 · Bring up Postgres + the app
 
 ```bash
 cp .env.example .env        # no API key required — the default model is a mock
-docker compose up --build
+docker compose up --build   # API on http://localhost:8080
 ```
 
 **No API key is needed to run.** Out of the box the app uses a built-in mock
-embedding + mock chat model, so the whole pipeline (ingest → retrieve → grounded
+embedding + mock chat model, so the full pipeline (ingest → retrieve → grounded
 answer with citations) works offline. To use a real model, pick a provider
-per-request in the UI — `ollama` with any pulled model (e.g. `gemma2:9b`), or a
-server-configured `openai`/`anthropic`/`google-genai` (see
-[`docs/model-providers.md`](./docs/model-providers.md)).
+per request in the UI — `ollama` with any pulled model (e.g. `gemma2:9b`), or a
+server-configured `openai` / `anthropic` / `google-genai`. See
+[`docs/model-providers.md`](./docs/model-providers.md).
 
-The app listens on `http://localhost:8080`. The `dev` profile seeds a bootstrap
-admin (`admin` / `admin12345` by default — override via `.env`).
+The `dev` profile seeds a bootstrap admin (`admin` / `admin12345` by default —
+override via `.env`).
 
-### 2. Log in (JWT) and seed the sample corpus
+### 2 · Log in (JWT) and seed the sample corpus
 
-The API is secured with JWT + RBAC. Ingest requires the `ADMIN` role; the seed
+The API is secured with JWT + RBAC; ingest requires the `ADMIN` role. The seed
 script logs in for you:
 
 ```bash
 ./sample-corpus/seed-corpus.sh          # logs in as admin, then ingests 5 docs
 ```
 
-To get a token by hand:
+Grab a token by hand if you prefer:
 
 ```bash
 TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
@@ -73,7 +103,7 @@ TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
   -d '{"username":"admin","password":"admin12345"}' | jq -r .accessToken)
 ```
 
-### 3. Ask the corpus a question
+### 3 · Ask the corpus a question
 
 ```bash
 curl -s -X POST http://localhost:8080/api/v1/query \
@@ -83,173 +113,167 @@ curl -s -X POST http://localhost:8080/api/v1/query \
   | jq
 ```
 
-Self-service registration (`POST /api/v1/auth/register`) creates a `USER` who
-can query and read but cannot ingest or delete.
+Self-service registration (`POST /api/v1/auth/register`) creates a `USER` who can
+query and read but cannot ingest or delete.
 
-### 4. Connect an MCP client
+### 4 · Connect an MCP client
 
-The MCP server is live at `POST http://localhost:8080/mcp` (Streamable HTTP).
-For a quick interactive UI:
+The MCP server is live at `POST http://localhost:8080/mcp` (Streamable HTTP). For
+a quick interactive UI:
 
 ```bash
-npx @modelcontextprotocol/inspector
+npx @modelcontextprotocol/inspector   # point it at http://localhost:8080/mcp
 ```
 
-Point it at `http://localhost:8080/mcp` (transport: Streamable HTTP). You
-should see five tools: `search_cargo_documents`, `lookup_incoterm`,
-`lookup_hs_code`, `summarize_shipment`, `ingest_cargo_document`.
-
-To connect from Claude Desktop, which currently expects STDIO MCP servers,
-bridge with `mcp-remote`:
+From Claude Desktop (which expects STDIO MCP servers), bridge with `mcp-remote`:
 
 ```json
 {
   "mcpServers": {
-    "cargo-iq": {
-      "command": "npx",
-      "args": ["mcp-remote", "http://localhost:8080/mcp"]
-    }
+    "cargo-iq": { "command": "npx", "args": ["mcp-remote", "http://localhost:8080/mcp"] }
   }
 }
 ```
 
----
-
-## Web UI
+## 🖥 Web UI
 
 A modern single-page client lives in [`frontend/`](./frontend) — React 18 +
 TypeScript + Vite + Tailwind, with framer-motion micro-interactions and an
-Aceternity/21st.dev-style visual language. It exercises the backend end to end:
-JWT auth with role-aware gating, a live corpus dashboard (`/api/v1/overview`),
-document browse/ingest/delete, RAG queries with grounded/citation rendering, and
-the INCOTERMS + HS-code reference lookups. It also has a **light/dark theme
-toggle** and a **per-request model picker** — switch between the mock model
-(no setup), Ollama with any local model, or a configured API provider, right
-from the query view.
+Aceternity / 21st.dev-style visual language. It drives the backend end to end:
+
+- JWT auth with role-aware gating (ingest/delete surface only for `ADMIN`)
+- a live corpus **dashboard** (`/api/v1/overview`) with animated breakdowns
+- **document** browse / filter / ingest / delete
+- **ask the corpus** — RAG with grounded badge, scored citation cards, and a
+  **per-request model picker** (mock / Ollama / configured provider)
+- **reference** — INCOTERMS 2020 rule cards and HS-code lookup
+- a persisted **light / dark theme** toggle
 
 ```bash
-docker compose up --build          # API on :8080
-cd frontend && npm install && npm run dev   # UI on :5173
+docker compose up --build                     # API on :8080
+cd frontend && npm install && npm run dev     # UI  on :5173  (sign in: admin / admin12345)
 ```
 
-Sign in with the dev bootstrap admin (`admin` / `admin12345`). See
-[`frontend/README.md`](./frontend/README.md) for details.
+See [`frontend/README.md`](./frontend/README.md) for details.
 
----
-
-## Running tests
-
-```bash
-mvn -B verify
-```
-
-Tests fall into three buckets:
-- **Domain tests** — pure JUnit, no Spring (`IncotermTest`)
-- **Use-case tests** — JUnit + hand-rolled fake ports, no Spring (`AnswerQueryServiceTest`)
-- **Integration smoke** — full `@SpringBootTest` against pgvector via Testcontainers
-  (`CargoIqApplicationTests`)
-
-This layering is the payoff of hexagonal architecture — most of your tests
-never need a container, only the smoke test does. See `ARCHITECTURE.md` §
-*Testing strategy*.
-
----
-
-## REST surface (highlights)
+## 🔌 REST API
 
 | Method | Path | Role | Purpose |
 |---|---|---|---|
-| POST | `/api/v1/auth/register` | public | Create a `USER` account |
-| POST | `/api/v1/auth/login` | public | Exchange credentials for a bearer JWT |
-| GET | `/api/v1/auth/me` | any auth | Identity + roles from the presented token |
-| POST | `/api/v1/documents` | ADMIN | Ingest a document (chunks, embeds, indexes) |
-| DELETE | `/api/v1/documents/{id}` | ADMIN | Delete a document (cascades JPA + vector store) |
-| GET | `/api/v1/documents` | any auth | List documents, filterable by type |
-| GET | `/api/v1/documents/{id}` | any auth | Fetch a single document |
-| POST | `/api/v1/query` | any auth | RAG: ask a grounded question with citations |
-| GET | `/api/v1/incoterms/{code}` | any auth | Canonical INCOTERM 2020 rule lookup |
-| GET | `/api/v1/hs-codes/{code}` | any auth | HS code by exact code |
-| GET | `/api/v1/hs-codes/search?q=...` | any auth | HS code by description |
-| GET | `/swagger` | public | Swagger UI (with "Authorize" for the bearer token) |
-| GET | `/actuator/health` | public | Liveness/readiness |
-| GET | `/actuator/prometheus` | any auth | Metrics |
+| `POST` | `/api/v1/auth/register` | public | Create a `USER` account |
+| `POST` | `/api/v1/auth/login` | public | Exchange credentials for a bearer JWT |
+| `GET` | `/api/v1/auth/me` | any auth | Identity + roles from the presented token |
+| `POST` | `/api/v1/documents` | `ADMIN` | Ingest a document (chunks, embeds, indexes) |
+| `DELETE` | `/api/v1/documents/{id}` | `ADMIN` | Delete a document (cascades JPA + vector store) |
+| `GET` | `/api/v1/documents` | any auth | List documents, filterable by type |
+| `GET` | `/api/v1/documents/{id}` | any auth | Fetch a single document |
+| `POST` | `/api/v1/query` | any auth | RAG: grounded answer + citations (per-request model choice) |
+| `GET` | `/api/v1/overview` | any auth | Corpus totals + breakdowns (dashboard) |
+| `GET` | `/api/v1/incoterms/{code}` | any auth | Canonical INCOTERM 2020 rule lookup |
+| `GET` | `/api/v1/hs-codes/{code}` | any auth | HS code by exact code |
+| `GET` | `/api/v1/hs-codes/search?q=…` | any auth | HS code by description |
+| `GET` | `/swagger` | public | Swagger UI (with bearer "Authorize") |
+| `GET` | `/actuator/health` | public | Liveness / readiness |
 
----
+## 🧰 MCP tools
 
-## MCP tools
-
-| Tool | Use case it calls | Description |
+| Tool | Use case | Description |
 |---|---|---|
-| `search_cargo_documents` | `AnswerQueryUseCase` | RAG over ingested docs, returns grounded answer + citations |
+| `search_cargo_documents` | `AnswerQueryUseCase` | RAG over the corpus → grounded answer + citations |
 | `lookup_incoterm` | `LookupIncotermUseCase` | Canonical INCOTERMS 2020 lookup (no LLM) |
 | `lookup_hs_code` | `LookupHsCodeUseCase` | HS tariff code by exact code |
 | `search_hs_codes` | `LookupHsCodeUseCase` | HS tariff code by free-text description |
-| `summarize_shipment` | `AnswerQueryUseCase` + `ListDocumentsUseCase` | Structured summary of one known document |
-| `ingest_cargo_document` | `IngestDocumentUseCase` | Push a new document into the corpus from the LLM side |
+| `summarize_shipment` | `AnswerQueryUseCase` + `ListDocumentsUseCase` | Structured summary of one document |
+| `ingest_cargo_document` | `IngestDocumentUseCase` | Push a new document into the corpus |
 
----
+## 🧠 Model providers
 
-## Project layout
+The chat model is chosen **per request** and embeddings are a server-level
+choice. The default is a dependency-free mock; real providers slot in behind the
+same ports. Full matrix and trade-offs in
+[`docs/model-providers.md`](./docs/model-providers.md).
 
+| Provider | Chat | Embeddings | Credential |
+|---|:---:|:---:|---|
+| Mock (default) | ✓ | ✓ | none |
+| OpenAI | ✓ | ✓ | API key |
+| Anthropic (Claude) | ✓ | — | API key |
+| Google Gemini | ✓ | ✓ | API key |
+| Ollama | ✓ | ✓ | none (local) |
+
+## 🧪 Testing
+
+```bash
+mvn -B verify        # unit rings + a Testcontainers pgvector smoke test
 ```
+
+Three rings, mirroring the architecture:
+
+- **Domain** — pure JUnit, no Spring (`IncotermTest`).
+- **Use case** — JUnit + hand-rolled fake ports, no Spring/Mockito/Testcontainers
+  (`AnswerQueryServiceTest`, `ChatModelRouterTest`, …). The primary dev loop.
+- **Integration smoke** — one `@SpringBootTest` against `pgvector/pgvector:pg16`
+  via Testcontainers (`CargoIqApplicationTests`).
+
+Most tests never need a container — only the smoke test does. See
+`ARCHITECTURE.md` § *Testing strategy*.
+
+## 🗂 Project layout
+
+```text
 io.cargoiq
 ├── domain/                 # pure POJOs — no Spring, no JPA, no Jackson
-│   ├── model/              # Document, DocumentChunk, Incoterm, HsCode, ...
+│   ├── model/              # Document, Incoterm, HsCode, Query, ModelChoice, User, …
 │   └── exception/
 ├── application/            # use cases + ports
-│   ├── port/in/            # inbound port interfaces (use case contracts)
-│   ├── port/out/           # outbound port interfaces (SPIs)
-│   └── service/            # use case implementations
+│   ├── port/in/            # inbound ports (use-case contracts)
+│   ├── port/out/           # outbound ports (SPIs)
+│   └── service/            # use-case implementations
 ├── adapter/
 │   ├── in/
 │   │   ├── web/            # REST controllers + DTOs + @RestControllerAdvice
-│   │   └── mcp/            # MCP tools (and stubs for prompts + resources)
+│   │   └── mcp/            # MCP @Tool beans (+ stubs for prompts/resources)
 │   └── out/
-│       ├── ai/             # Spring AI ChatModel adapter
-│       ├── parser/         # raw-text parsing + metadata extraction
-│       ├── persistence/
-│       │   ├── jpa/        # DocumentEntity + Spring Data repo + adapter
-│       │   └── vector/     # PgVectorAdapter wrapping Spring AI VectorStore
+│       ├── ai/             # ChatModelRouter + MockEmbeddingModel (Spring AI)
+│       ├── security/       # BCrypt hasher + JWT issuer
+│       ├── parser/         # text chunking + metadata extraction
+│       ├── persistence/    # jpa/ (documents, users) + vector/ (pgvector)
 │       └── reference/      # HsCodeReferenceData (CSV-backed)
 └── config/                 # @Configuration classes only
+
+frontend/                   # React + Vite + Tailwind SPA
+docs/                       # model-providers guide + ADRs + diagrams
 ```
 
----
+## 🗺 Roadmap
 
-## Roadmap
+- [x] Stateless **JWT auth + RBAC** (USER / ADMIN) via Spring Security
+- [x] **Pluggable model providers** + a zero-key mock default
+- [x] **Per-request model selection** (provider + model) from the UI
+- [x] **Document delete** cascading JPA + pgvector
+- [x] **Corpus overview** endpoint + dashboard
+- [ ] **MCP Resources** — expose each `Document` at `cargo://documents/{id}`
+- [ ] **MCP Prompts** — `compare_bl_to_invoice`, `letter_of_credit_compliance_check`, …
+- [ ] **Re-ranking** — a cross-encoder between retrieval and generation
+- [ ] **PDF ingest** — a `PdfDocumentParser` on the Tika reader (dep already present)
+- [ ] **HS taxonomy** — full WCO HS 2022 export, FTS-backed once size justifies it
 
-Each item below has a marker in the code or docs explaining where it slots in;
-`ARCHITECTURE.md` has the detail.
+## 🤝 Contributing
 
-- [x] **Auth** — stateless JWT + RBAC (USER/ADMIN) via Spring Security.
-- [x] **Pluggable model providers** — OpenAI, Anthropic, Gemini, Ollama
-      (see `docs/model-providers.md`).
-- [x] **Document delete** — cascade across the JPA aggregate and pgvector.
-- [ ] **Document Resources** — expose every persisted `Document` as an MCP
-      resource at `cargo://documents/{id}`.
-- [ ] **MCP Prompts** — `compare_bl_to_invoice`, `letter_of_credit_compliance_check`,
-      `port_handover_brief`.
-- [ ] **Re-ranking** — a cross-encoder re-ranker (Cohere or local bge-reranker)
-      between retrieval and generation in `AnswerQueryService`.
-- [ ] **PDF ingest** — a `PdfDocumentParser` using Spring AI's Tika reader
-      (the dependency is already in `pom.xml`).
-- [ ] **HS taxonomy** — replace the curated CSV with the full WCO HS 2022
-      export; a Postgres FTS-backed adapter once size justifies it.
+Issues and PRs are welcome. Branch from `main`, keep changes small and tested,
+and make sure `mvn -B verify` (and `cd frontend && npm run build`) is green before
+opening a PR.
 
----
-
-## How this project is built
+## 🛠 How this project is built
 
 This is a personal project, built with AI assistance used deliberately as an
 engineering tool — for scaffolding, drafting, and exploring options — while the
 design decisions, domain modelling, and architecture are my own. **Every change
-is manually reviewed, run, and tested before it is merged**; the layered unit
-tests (`mvn verify`) are the gate, and no PR lands without a green build and a
+is manually reviewed, run, and tested before it is merged**: the layered tests
+(`mvn verify`) are the gate, and nothing lands without a green build and a
 read-through of the diff. The intent is a codebase I fully understand and stand
 behind, not generated output taken on faith.
 
----
+## 📄 License
 
-## License
-
-Apache 2.0.
+Licensed under the **Apache License 2.0** — see [`LICENSE`](./LICENSE).
