@@ -38,7 +38,7 @@ return". Same body shape as a controller. Different annotations.
 - **Single deployment.** One Docker image, one container, one network
   boundary, one set of metrics — the right default at this scale.
 - **Single source of truth for prompts and grounding.** The system prompt
-  in `SpringAiChatModelAdapter` applies whether the question came via REST
+  in `ChatModelRouter` applies whether the question came via REST
   or via MCP — there's no "MCP path" that could drift.
 - **Testability is the same.** A fake `AnswerQueryUseCase` exercises both
   the controller and the tool with the same logic.

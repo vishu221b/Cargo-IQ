@@ -1,16 +1,45 @@
 # Model providers
 
-`cargo-iq` is provider-agnostic. The chat model sits behind `ChatModelPort` and
-the embedding model behind the pgvector adapter, so the domain and application
-layers never name a vendor. Four providers ship on the classpath and you pick
-one for chat and one for embeddings at runtime — no recompile, no code change.
+`cargo-iq` is provider-agnostic. The chat model sits behind `ChatModelPort`
+(implemented by `ChatModelRouter`) and the embedding model behind the pgvector
+adapter, so the domain and application layers never name a vendor.
 
 | Provider | Chat | Embeddings | Credential | Notes |
 |---|:---:|:---:|---|---|
-| **OpenAI** | ✓ | ✓ | API key | Default. Cheap, fast. |
+| **Mock** | ✓ | ✓ | none | **Default.** No setup; runs the whole pipeline offline. |
+| **OpenAI** | ✓ | ✓ | API key | Cheap, fast. |
 | **Anthropic (Claude)** | ✓ | — | API key | No embedding model — pair with another for embeddings. |
 | **Google Gemini** | ✓ | ✓ | API key (AI Studio) | `text-embedding-004` is 768-dim. |
-| **Ollama** | ✓ | ✓ | none (local) | Easiest end-to-end run; no keys. |
+| **Ollama** | ✓ | ✓ | none (local) | Any pulled model, e.g. `gemma2:9b`. |
+
+## The mock default (no keys)
+
+Out of the box `chat=mock` and `embedding=none`, so:
+
+- **`MockEmbeddingModel`** (`@ConditionalOnMissingBean`) provides embeddings via
+  signed feature hashing — deterministic and *lexically* meaningful (cosine
+  similarity tracks token overlap), so retrieval genuinely works offline. A
+  configured embedding provider transparently replaces it.
+- **`ChatModelRouter`** synthesises a grounded, cited answer from the retrieved
+  passages without any LLM call.
+
+This is what lets you `docker compose up` and exercise ingest → retrieve →
+grounded answer with **no API key and no model server**.
+
+## Per-request model selection
+
+The chat model is chosen **per query** — the UI's model picker (or the
+`provider`/`model` fields on `POST /api/v1/query`) sends a `ModelChoice`:
+
+- `mock` — the default above.
+- `ollama` — `ChatModelRouter` builds an Ollama chat model on demand for any
+  pulled model name (needs only a local Ollama server; no restart).
+- `openai` / `anthropic` / `google-genai` — used when the server was started
+  with that provider as its default (below). An unavailable provider returns
+  `503` so the UI can suggest switching.
+
+Embeddings are *not* per-request (changing them means re-indexing), so they stay
+a server-level choice.
 
 ## Selecting a provider
 

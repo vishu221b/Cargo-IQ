@@ -14,8 +14,11 @@ The UI exercises the backend end to end:
   INCOTERM breakdowns, animated).
 - **Documents** — browse, filter by type, ingest (ADMIN), delete (ADMIN).
 - **Ask the corpus** — RAG query with the grounded/ungrounded badge and citation
-  cards scored back to the source chunk.
+  cards scored back to the source chunk, plus a **per-request model picker**
+  (mock / Ollama with any pulled model / configured API providers).
 - **Reference** — INCOTERMS 2020 rule cards and HS-code lookup/search.
+- **Theme** — light/dark toggle, persisted, honouring the OS preference; the UI
+  is built on CSS-variable design tokens so it re-themes from one switch.
 
 ## Run it
 

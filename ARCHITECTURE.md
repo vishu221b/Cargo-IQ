@@ -173,7 +173,7 @@ io.cargoiq
 │       │   └── vector/
 │       │       └── PgVectorAdapter.java        ── wraps Spring AI VectorStore
 │       ├── ai/
-│       │   └── SpringAiChatModelAdapter.java   ── owns the RAG system prompt
+│       │   └── ChatModelRouter.java   ── owns the RAG system prompt
 │       ├── parser/
 │       │   └── TextDocumentParser.java         ── chunking + regex extraction
 │       └── reference/
@@ -250,7 +250,7 @@ AnswerQueryService                              (application/service)
   │     similaritySearch(queryText, topK, filters)
   │     → List<Citation>
   │
-  └──► ChatModelPort                            ─► SpringAiChatModelAdapter
+  └──► ChatModelPort                            ─► ChatModelRouter
          generateGrounded(query, citations)
          → grounded answer text
   ↓

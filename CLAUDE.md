@@ -6,13 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`cargo-iq` is a Spring Boot 3.4 / Java 21 RAG service for cargo, freight, and trade-finance documents (Bills of Lading, Commercial Invoices, Letters of Credit, INCOTERMS, HS codes). The same capabilities are exposed twice: as a REST API under `/api/v1` and as an embedded MCP server at `POST /mcp` (Streamable HTTP). Retrieval is pgvector-backed; generation goes through OpenAI via Spring AI 1.1.
+`cargo-iq` is a Spring Boot 3.4 / Java 21 RAG service for cargo, freight, and trade-finance documents (Bills of Lading, Commercial Invoices, Letters of Credit, INCOTERMS, HS codes). The same capabilities are exposed twice: as a REST API under `/api/v1` and as an embedded MCP server at `POST /mcp` (Streamable HTTP). Retrieval is pgvector-backed. **It runs with no API key by default** — a built-in mock embedding (`MockEmbeddingModel`) + mock chat (`ChatModelRouter`) — and switches to OpenAI / Anthropic / Gemini / Ollama per-request (the query carries a `ModelChoice`) or via config.
 
 ## Commands
 
 ```bash
-# Run the full stack (Postgres+pgvector + app) — needs OPENAI_API_KEY in .env
-cp .env.example .env        # paste OPENAI_API_KEY
+# Run the full stack (Postgres+pgvector + app) — no API key needed (mock default)
+cp .env.example .env        # only edit to use a real provider
 docker compose up --build   # app on :8080
 
 # Build + run all tests (Testcontainers spins up pgvector for the smoke test)
@@ -45,7 +45,7 @@ Dependencies point inward: `adapter` → `application` → `domain`. The domain 
 
 ### Rules that span multiple files
 - **Inbound adapters contain no business logic.** Controllers and `@Tool` methods build a domain object and delegate to a use case in one line. REST and MCP both call the *same* use cases — never duplicate logic between them.
-- **The RAG system prompt is business logic, not infrastructure.** It lives inside `SpringAiChatModelAdapter` (which implements `ChatModelPort`). Grounding/citation behavior is defined there, not in the service.
+- **The RAG system prompt is business logic, not infrastructure.** It lives inside `ChatModelRouter` (which implements `ChatModelPort`). Grounding/citation behavior is defined there, not in the service.
 - **Two Postgres tables, deliberately split.** `documents` (JPA + Flyway-owned, aggregate metadata + flattened fields for filtering) and `vector_store` (Spring AI starter-owned, chunk text + embeddings). Chunk text is *not* duplicated into JPA — `DocumentEntity#toDomain` returns empty chunks on read. Deleting a document must hit *both* stores (`PgVectorAdapter#deleteByDocumentId` + the JPA delete); no delete use case exists yet.
 - **Swapping infrastructure = rewrite one adapter + one starter.** Changing model vendor (OpenAI→Ollama/Anthropic) or vector store (pgvector→Qdrant) touches only an adapter class and `pom.xml`; domain/application stay untouched. This is the whole point — keep that wall intact.
 
@@ -57,7 +57,7 @@ Dependencies point inward: `adapter` → `application` → `domain`. The domain 
 Stateless JWT (HS256). `POST /api/v1/auth/login` issues a token; protected requests carry `Authorization: Bearer <jwt>`, validated by Spring Security's OAuth2 resource server. Roles `USER`/`ADMIN` (`domain.model.Role`) ride in the `roles` claim as `ROLE_*`. Corpus-mutating endpoints (`POST`/`DELETE /api/v1/documents`) require `ADMIN`; other `/api/v1/**` requires any authenticated user; auth/docs/health/`/mcp` are public. Credential check + token minting sit behind `UserRepository`/`PasswordHasherPort`/`TokenIssuerPort` — the security framework never reaches the core. Dev profile seeds a bootstrap admin (`DataInitializer`).
 
 ### Model providers
-Four Spring AI starters on the classpath (OpenAI, Anthropic, Gemini, Ollama); the active chat/embedding providers are chosen by `spring.ai.model.chat` / `spring.ai.model.embedding` (default openai). No domain/application change to switch — see `docs/model-providers.md`. The `ollama` profile runs key-free locally and sets the pgvector width to 768.
+**Default is a dependency-free mock** (chat=`mock`, embedding=`none`→`MockEmbeddingModel`) so the app runs with no key. `ChatModelRouter` picks the chat model per request from the `ModelChoice` on the `Query`: `mock`, `ollama` (any pulled model, built on demand — needs only a local Ollama), or a server-configured provider. Four Spring AI starters are on the classpath; a real server default is set via `spring.ai.model.chat`/`embedding` (+ key). `MockEmbeddingModel` is `@ConditionalOnMissingBean`, so a configured embedding provider transparently replaces it. Embedding switches need re-indexing (`docs/model-providers.md`). Unavailable providers → 503 `ModelUnavailableException`.
 
 ## Testing strategy (three rings)
 - **Ring 1 — domain** (`IncotermTest`): pure JUnit, no Spring, milliseconds.

@@ -30,7 +30,7 @@ flowchart TB
     direction LR
     JPA["DocumentRepositoryAdapter<br/>+ DocumentEntity<br/>+ Spring Data JpaRepository"]
     Vec["PgVectorAdapter<br/>(wraps Spring AI VectorStore)"]
-    AI["SpringAiChatModelAdapter<br/>(owns the RAG system prompt)"]
+    AI["ChatModelRouter<br/>(owns the RAG system prompt)"]
     Parser["TextDocumentParser<br/>(chunking + regex extraction)"]
     Ref["HsCodeReferenceData<br/>(loads hs-codes.csv)"]
   end

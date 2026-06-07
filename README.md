@@ -42,14 +42,16 @@ Adapters). See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the deep walkthrough
 ### 1. Bring up Postgres + the app
 
 ```bash
-cp .env.example .env
-# Pick a model provider:
-#   - OpenAI/Anthropic/Gemini: paste the relevant API key (see docs/model-providers.md)
-#   - Ollama (no key): `ollama pull llama3.1 && ollama pull nomic-embed-text`
-#     then set SPRING_PROFILES_ACTIVE=dev,ollama
-
+cp .env.example .env        # no API key required — the default model is a mock
 docker compose up --build
 ```
+
+**No API key is needed to run.** Out of the box the app uses a built-in mock
+embedding + mock chat model, so the whole pipeline (ingest → retrieve → grounded
+answer with citations) works offline. To use a real model, pick a provider
+per-request in the UI — `ollama` with any pulled model (e.g. `gemma2:9b`), or a
+server-configured `openai`/`anthropic`/`google-genai` (see
+[`docs/model-providers.md`](./docs/model-providers.md)).
 
 The app listens on `http://localhost:8080`. The `dev` profile seeds a bootstrap
 admin (`admin` / `admin12345` by default — override via `.env`).
@@ -120,7 +122,10 @@ TypeScript + Vite + Tailwind, with framer-motion micro-interactions and an
 Aceternity/21st.dev-style visual language. It exercises the backend end to end:
 JWT auth with role-aware gating, a live corpus dashboard (`/api/v1/overview`),
 document browse/ingest/delete, RAG queries with grounded/citation rendering, and
-the INCOTERMS + HS-code reference lookups.
+the INCOTERMS + HS-code reference lookups. It also has a **light/dark theme
+toggle** and a **per-request model picker** — switch between the mock model
+(no setup), Ollama with any local model, or a configured API provider, right
+from the query view.
 
 ```bash
 docker compose up --build          # API on :8080
