@@ -50,11 +50,46 @@ export default {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        // Infinite horizontal ticker — content is duplicated, so -50% loops seamlessly.
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "marquee-y": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-14px)" },
+        },
+        "gradient-x": {
+          "0%, 100%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+        },
+        "spin-slow": {
+          to: { transform: "rotate(360deg)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.06)" },
+        },
+        blink: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0" },
+        },
       },
       animation: {
         aurora: "aurora 18s ease-in-out infinite",
         shimmer: "shimmer 2s infinite",
         "fade-up": "fade-up 0.4s ease-out both",
+        marquee: "marquee var(--marquee-duration, 40s) linear infinite",
+        "marquee-y": "marquee-y var(--marquee-duration, 40s) linear infinite",
+        float: "float 7s ease-in-out infinite",
+        "gradient-x": "gradient-x 8s ease infinite",
+        "spin-slow": "spin-slow 28s linear infinite",
+        "pulse-glow": "pulse-glow 4s ease-in-out infinite",
+        blink: "blink 1.1s step-end infinite",
       },
     },
   },

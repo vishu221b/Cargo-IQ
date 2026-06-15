@@ -107,14 +107,14 @@ export default function Dashboard() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <QuickAction to="/query" icon={MessageSquareText} label="Ask the corpus" sub="Run a grounded RAG query" />
+              <QuickAction to="/app/query" icon={MessageSquareText} label="Ask the corpus" sub="Run a grounded RAG query" />
               <QuickAction
-                to="/documents"
+                to="/app/documents"
                 icon={isAdmin ? Upload : FileStack}
                 label={isAdmin ? "Ingest a document" : "Browse documents"}
                 sub={isAdmin ? "Chunk, embed and index" : "View the indexed corpus"}
               />
-              <QuickAction to="/reference" icon={Layers} label="Reference lookup" sub="INCOTERMS & HS codes" />
+              <QuickAction to="/app/reference" icon={Layers} label="Reference lookup" sub="INCOTERMS & HS codes" />
             </div>
           </>
         )

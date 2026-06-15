@@ -24,7 +24,7 @@ export default function Login() {
 
   // Already signed in -> bounce to the app.
   if (user) {
-    const to = location.state?.from?.pathname ?? "/";
+    const to = location.state?.from?.pathname ?? "/app";
     return <NavigateOnce to={to} navigate={navigate} />;
   }
 
@@ -39,7 +39,7 @@ export default function Login() {
         await register(username.trim(), password);
         toast.success("Account created — you're in.");
       }
-      navigate(location.state?.from?.pathname ?? "/", { replace: true });
+      navigate(location.state?.from?.pathname ?? "/app", { replace: true });
     } catch (err) {
       const msg =
         err instanceof ApiError ? err.message : "Something went wrong. Try again.";
