@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   FileStack,
@@ -15,10 +15,10 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/documents", label: "Documents", icon: FileStack, end: false },
-  { to: "/query", label: "Ask the corpus", icon: MessageSquareText, end: false },
-  { to: "/reference", label: "Reference", icon: BookMarked, end: false },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/app/documents", label: "Documents", icon: FileStack, end: false },
+  { to: "/app/query", label: "Ask the corpus", icon: MessageSquareText, end: false },
+  { to: "/app/reference", label: "Reference", icon: BookMarked, end: false },
 ];
 
 export default function Layout() {
@@ -29,7 +29,7 @@ export default function Layout() {
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-line/[0.06] bg-surface/40 px-4 py-6 backdrop-blur-xl md:flex">
-        <div className="flex items-center gap-2.5 px-2">
+        <Link to="/" className="flex items-center gap-2.5 px-2" title="Back to home">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-accent to-cyanish shadow-glow">
             <Boxes className="h-5 w-5 text-white" />
           </div>
@@ -37,7 +37,7 @@ export default function Layout() {
             <p className="text-sm font-semibold tracking-tight text-fg">cargo-iq</p>
             <p className="text-[11px] text-faint">trade intelligence</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {NAV.map((item) => (
