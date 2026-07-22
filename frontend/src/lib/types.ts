@@ -70,7 +70,15 @@ export interface Citation {
 export interface QueryResult {
   answer: string;
   grounded: boolean;
+  retrievalStrategy: string;
+  conversationId: string | null;
   citations: Citation[];
+}
+
+export interface RetrievalOptions {
+  hybrid: boolean;
+  multiQuery: boolean;
+  rerank: boolean;
 }
 
 export interface Overview {
