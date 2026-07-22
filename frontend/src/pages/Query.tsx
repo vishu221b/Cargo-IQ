@@ -139,7 +139,7 @@ export default function Query() {
                     <ShieldCheck className="h-3.5 w-3.5" /> Grounded · {result.citations.length} sources
                   </Badge>
                 ) : (
-                  <Badge tone="amber">
+                  <Badge tone="rose">
                     <ShieldAlert className="h-3.5 w-3.5" /> Ungrounded
                   </Badge>
                 )}

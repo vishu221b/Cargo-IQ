@@ -133,7 +133,7 @@ export function SpotlightCard({
 }) {
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const bg = useMotionTemplate`radial-gradient(420px circle at ${mx}px ${my}px, rgba(124,92,255,0.16), transparent 60%)`;
+  const bg = useMotionTemplate`radial-gradient(420px circle at ${mx}px ${my}px, rgba(245,158,11,0.16), transparent 60%)`;
 
   return (
     <div
@@ -247,8 +247,8 @@ export function Marquee({
 export function ParticleField({
   className,
   density = 0.00012,
-  color = "124,92,255",
-  linkColor = "124,92,255",
+  color = "245,158,11",
+  linkColor = "245,158,11",
 }: {
   className?: string;
   density?: number;
@@ -417,7 +417,7 @@ export function ScrollProgress() {
   return (
     <motion.div
       style={{ scaleX: x }}
-      className="fixed inset-x-0 top-0 z-[60] h-0.5 origin-left bg-gradient-to-r from-accent via-fuchsia-400 to-cyanish"
+      className="fixed inset-x-0 top-0 z-[60] h-0.5 origin-left bg-gradient-to-r from-accent via-orange-400 to-cyanish"
     />
   );
 }
