@@ -6,11 +6,17 @@ import io.cargoiq.domain.model.Citation;
 import io.cargoiq.domain.model.ModelChoice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.anthropic.AnthropicChatModel;
+import org.springframework.ai.anthropic.AnthropicChatOptions;
+import org.springframework.ai.anthropic.api.AnthropicApi;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -91,8 +97,43 @@ public class ChatModelRouter implements ChatModelPort {
         return switch (provider) {
             case "", "mock", "none" -> mockAnswer(userQuery, context);
             case "ollama" -> ollamaAnswer(choice, userPrompt);
-            default -> configuredAnswer(provider, userPrompt);
+            // A caller's own key (from Settings) takes precedence: build the model
+            // on the user's account. Otherwise fall back to the server default.
+            default -> choice.hasApiKey()
+                    ? userKeyAnswer(provider, choice, userPrompt)
+                    : configuredAnswer(provider, userPrompt);
         };
+    }
+
+    // ---- per-user "bring your own key" (OpenAI / Anthropic, built on demand) ----
+
+    private String userKeyAnswer(String provider, ModelChoice choice, String userPrompt) {
+        ChatModel model = switch (provider) {
+            case "openai" -> OpenAiChatModel.builder()
+                    .openAiApi(OpenAiApi.builder().apiKey(choice.apiKey()).build())
+                    .defaultOptions(OpenAiChatOptions.builder()
+                            .model(choice.hasModel() ? choice.model().trim() : "gpt-4o-mini")
+                            .temperature(0.1).build())
+                    .build();
+            case "anthropic" -> AnthropicChatModel.builder()
+                    .anthropicApi(AnthropicApi.builder().apiKey(choice.apiKey()).build())
+                    .defaultOptions(AnthropicChatOptions.builder()
+                            .model(choice.hasModel() ? choice.model().trim() : "claude-sonnet-4-5")
+                            .temperature(0.1).maxTokens(1024).build())
+                    .build();
+            default -> null; // no per-user builder for this provider yet
+        };
+        if (model == null) {
+            return configuredAnswer(provider, userPrompt);
+        }
+        try {
+            return ChatClient.create(model)
+                    .prompt().system(SYSTEM_PROMPT).user(userPrompt).call().content();
+        } catch (Exception e) {
+            log.warn("Per-user {} call failed: {}", provider, e.getMessage());
+            throw new ModelUnavailableException(provider,
+                    "your saved API key was rejected or the call failed (" + e.getMessage() + ")");
+        }
     }
 
     // ---- ollama (runtime model selection) ----

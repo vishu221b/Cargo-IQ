@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Documents from "./pages/Documents";
 import Query from "./pages/Query";
 import Reference from "./pages/Reference";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="documents" element={<Documents />} />
         <Route path="query" element={<Query />} />
         <Route path="reference" element={<Reference />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

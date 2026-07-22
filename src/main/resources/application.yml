@@ -173,6 +173,12 @@ cargoiq:
     bootstrap-admin:
       username: ${BOOTSTRAP_ADMIN_USERNAME:admin}
       password: ${BOOTSTRAP_ADMIN_PASSWORD:admin12345}
+    # AES-GCM key + hex salt used to encrypt per-user LLM API keys at rest.
+    # MUST be overridden in prod (SECRETS_KEY / SECRETS_SALT); rotating them makes
+    # previously stored keys undecryptable (i.e. invalidates them).
+    secrets:
+      key: ${SECRETS_KEY:dev-secrets-encryption-password-change-me}
+      salt: ${SECRETS_SALT:0123456789abcdef}
   web:
     cors:
       # Comma-separated origins allowed to call the API from a browser.

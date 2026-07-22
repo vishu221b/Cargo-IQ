@@ -4,6 +4,7 @@ import {
   FileStack,
   MessageSquareText,
   BookMarked,
+  Settings as SettingsIcon,
   LogOut,
   Boxes,
   ShieldCheck,
@@ -19,6 +20,7 @@ const NAV = [
   { to: "/app/documents", label: "Documents", icon: FileStack, end: false },
   { to: "/app/query", label: "Ask the corpus", icon: MessageSquareText, end: false },
   { to: "/app/reference", label: "Reference", icon: BookMarked, end: false },
+  { to: "/app/settings", label: "Settings", icon: SettingsIcon, end: false },
 ];
 
 export default function Layout() {

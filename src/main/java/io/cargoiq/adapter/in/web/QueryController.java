@@ -5,8 +5,10 @@ import io.cargoiq.adapter.in.web.dto.QueryResponse;
 import io.cargoiq.application.port.in.AnswerQueryUseCase;
 import io.cargoiq.application.port.in.LookupHsCodeUseCase;
 import io.cargoiq.application.port.in.LookupIncotermUseCase;
+import io.cargoiq.application.port.in.ManageApiKeysUseCase;
 import io.cargoiq.application.port.in.ManageConversationsUseCase;
 import io.cargoiq.domain.model.HsCode;
+import io.cargoiq.domain.model.ModelChoice;
 import io.cargoiq.domain.model.Query;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,39 +36,55 @@ public class QueryController {
     private final LookupIncotermUseCase lookupIncoterm;
     private final LookupHsCodeUseCase lookupHsCode;
     private final ManageConversationsUseCase conversations;
+    private final ManageApiKeysUseCase apiKeys;
 
     public QueryController(
             AnswerQueryUseCase answerQuery,
             LookupIncotermUseCase lookupIncoterm,
             LookupHsCodeUseCase lookupHsCode,
-            ManageConversationsUseCase conversations) {
+            ManageConversationsUseCase conversations,
+            ManageApiKeysUseCase apiKeys) {
         this.answerQuery = answerQuery;
         this.lookupIncoterm = lookupIncoterm;
         this.lookupHsCode = lookupHsCode;
         this.conversations = conversations;
+        this.apiKeys = apiKeys;
     }
 
     @Operation(summary = "Ask a question grounded in the ingested corpus")
     @PostMapping("/query")
     public QueryResponse ask(@Valid @RequestBody QueryRequest req, @AuthenticationPrincipal Jwt jwt) {
+        java.util.UUID userId = ConversationController.userId(jwt);
+
         // When the query threads a conversation, make sure it exists and belongs
         // to the caller before answering — the answering service then persists
         // this turn (and reads prior turns) via the DB-backed chat memory.
         if (req.conversationId() != null && !req.conversationId().isBlank()) {
             conversations.ensureOwned(
-                    java.util.UUID.fromString(req.conversationId()),
-                    ConversationController.userId(jwt),
-                    req.query());
+                    java.util.UUID.fromString(req.conversationId()), userId, req.query());
         }
+
         var query = new Query(
                 req.query(),
                 req.topKOrDefault(),
                 Optional.ofNullable(req.filterByType()),
                 Optional.ofNullable(req.filterByIncoterm()),
-                req.modelChoice(),
+                resolveModelChoice(req.modelChoice(), userId),
                 req.retrievalOptions(),
                 req.conversationId());
         return QueryResponse.from(answerQuery.answer(query), query);
+    }
+
+    /**
+     * Attach the caller's personal API key for the chosen provider (if they have
+     * stored one), so the answer runs on their own OpenAI/Anthropic account
+     * rather than the server default.
+     */
+    private ModelChoice resolveModelChoice(ModelChoice choice, java.util.UUID userId) {
+        if (choice == null || !choice.hasProvider()) return choice;
+        return apiKeys.resolveKey(userId, choice.providerId())
+                .map(choice::withApiKey)
+                .orElse(choice);
     }
 
     @Operation(summary = "Look up an INCOTERM 2020 rule by code (e.g. CIF, FOB, DDP)")
