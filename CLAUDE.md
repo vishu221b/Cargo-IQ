@@ -11,9 +11,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Run the full stack (Postgres+pgvector + app) — no API key needed (mock default)
-cp .env.example .env        # only edit to use a real provider
-docker compose up --build   # app on :8080
+# Run the WHOLE stack — web UI + app + pgvector + Adminer — no API key needed.
+# The compose file pins the zero-key mock defaults, so it's self-contained.
+docker compose up --build   # web :3000 · API :8080 · Adminer :8081
 
 # Build + run all tests (Testcontainers spins up pgvector for the smoke test)
 mvn -B verify
@@ -74,4 +74,4 @@ Don't write `@WebMvcTest` for adapters that only delegate — add controller/too
 - `SecurityConfig` wires the JWT filter chain + encode/decode beans; the dev `JWT_SECRET` default must be overridden anywhere reachable.
 
 ## Roadmap hooks
-Stubs and extension points are deliberate: `adapter/in/mcp/prompts/` and `adapter/in/mcp/resources/` are stubbed; re-ranking/multi-query/hybrid-search slot into `AnswerQueryService` behind new/extended ports. See ARCHITECTURE.md §5 and §14, and `docs/adr/` for the decision records.
+Most of the original roadmap is now built (all dependency-free / zero-key). `AnswerQueryService` orchestrates the full retrieval pipeline behind ports: multi-query (`QueryRewriterPort` → `HeuristicQueryRewriter`), hybrid dense+sparse retrieval (`KeywordSearchPort` → `PgFullTextAdapter`, Postgres FTS) fused with RRF, MMR re-ranking (`RerankerPort` → `MmrReranker`), and conversational memory (`ChatMemoryPort` → `InMemoryChatMemory`) — all toggled per request via `RetrievalOptions` on the `Query`. File ingest is `FileTextExtractorPort` → `TikaFileTextExtractor` (`POST /documents/upload`). MCP `@McpPrompt`s (`TradeFinancePrompts`) and `@McpResource`s (`DocumentResources`) are auto-registered by Spring AI's annotation scanner — no manual `McpConfig` entry. Remaining: a hosted cross-encoder reranker (swap `MmrReranker`) and a deploy target. See ARCHITECTURE.md §5 and §14, and `docs/adr/` for the decision records.

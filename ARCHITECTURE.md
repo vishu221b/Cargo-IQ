@@ -587,19 +587,31 @@ old one — the history is the point.
 
 Already in place: JWT auth + RBAC (§11), pluggable model providers
 (`docs/model-providers.md`), and document delete with a two-store cascade.
-Remaining, each a self-contained piece of work:
 
-1. **Re-ranking.** `RerankerPort` + a Cohere adapter or local model, called in
-   `AnswerQueryService` between retrieval and generation.
-2. **PDF ingest.** `PdfDocumentParser` using the Tika dependency already in
-   `pom.xml`.
-3. **HS taxonomy expansion.** Swap the CSV for the full WCO export (still
-   in-memory) or move to a Postgres FTS-backed adapter.
-4. **MCP Prompts.** The named templates listed in the `TradeFinancePrompts`
-   javadoc.
-5. **MCP Resources.** Expose each `Document` at `cargo://documents/{id}`.
-6. **Deploy.** A container target (Fly.io / Railway) with a small seed corpus.
+**Now built** — each landed as an incremental change behind a port, exactly as
+the scaffold intended (all dependency-free / zero-API-key):
 
-Every one of these has an explicit hook in the code (a port, a stubbed
-class, a TODO comment, or a javadoc upgrade plan). The scaffold is meant to
-make these incremental, not architectural.
+1. **Re-ranking.** `RerankerPort` → `MmrReranker` (Maximal Marginal Relevance
+   over lexical cosine), called in `AnswerQueryService` between retrieval and
+   generation.
+2. **Hybrid retrieval + multi-query.** `KeywordSearchPort` → `PgFullTextAdapter`
+   (Postgres full-text over `vector_store.content`) fused with the dense results
+   via Reciprocal Rank Fusion; `QueryRewriterPort` → `HeuristicQueryRewriter`
+   fans a query out into trade-domain variants. Toggled per request via
+   `RetrievalOptions`.
+3. **Conversational memory.** `ChatMemoryPort` → `InMemoryChatMemory`; prior
+   turns are threaded by `conversationId`.
+4. **File ingest.** `FileTextExtractorPort` → `TikaFileTextExtractor`
+   (`POST /api/v1/documents/upload`, multipart) using the Tika reader.
+5. **HS taxonomy.** Expanded curated schedule + token-aware ranked search
+   (still in-memory; the port is FTS-swappable when size justifies it).
+6. **MCP Prompts & Resources.** `TradeFinancePrompts` (`@McpPrompt`) and
+   `DocumentResources` (`@McpResource`: `cargo://documents`,
+   `cargo://documents/{id}`), auto-registered by Spring AI's annotation scanner.
+
+**Remaining:**
+
+- **Hosted cross-encoder reranker.** Swap `MmrReranker` for a Cohere/bge-reranker
+  adapter behind the same `RerankerPort`.
+- **Deploy.** A container target (Fly.io / Railway) with a small seed corpus.
+  (The whole stack already runs from a single `docker compose up`.)

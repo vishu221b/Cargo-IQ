@@ -69,12 +69,24 @@ per request.
 
 ## 🚀 Quick start
 
-### 1 · Bring up Postgres + the app
+### 1 · Bring up the whole stack
+
+One command brings up everything — web UI, API, pgvector, and a browser DB client:
 
 ```bash
-cp .env.example .env        # no API key required — the default model is a mock
-docker compose up --build   # API on http://localhost:8080
+docker compose up --build
 ```
+
+| Service | URL | Notes |
+| --- | --- | --- |
+| **Web UI** | http://localhost:3000 | React SPA (nginx); proxies the API same-origin |
+| **API + Swagger** | http://localhost:8080 · `/swagger` | REST + MCP (`POST /mcp`) |
+| **Adminer** | http://localhost:8081 | DB viewer — server `postgres`, user/pass `cargoiq` |
+
+No `.env` and **no API key** are required — the compose file pins the built-in
+mock defaults, so the stack is self-contained and offline. (To use a real
+provider, set `AI_CHAT_PROVIDER`/`AI_EMBEDDING_PROVIDER` + key and
+`VECTOR_DIMENSIONS` on the `app` service, then `docker compose down -v && up`.)
 
 **No API key is needed to run.** Out of the box the app uses a built-in mock
 embedding + mock chat model, so the full pipeline (ingest → retrieve → grounded
@@ -143,15 +155,20 @@ Aceternity / 21st.dev-style visual language. It drives the backend end to end:
 
 - JWT auth with role-aware gating (ingest/delete surface only for `ADMIN`)
 - a live corpus **dashboard** (`/api/v1/overview`) with animated breakdowns
-- **document** browse / filter / ingest / delete
-- **ask the corpus** — RAG with grounded badge, scored citation cards, and a
-  **per-request model picker** (mock / Ollama / configured provider)
+- **documents** — browse / filter / delete, paste-text **or file upload**
+  (PDF · DOCX · HTML · TXT), with "load more" pagination
+- **ask the corpus** — a multi-turn **RAG chat**: conversational memory,
+  toggleable **retrieval strategy** (hybrid · multi-query · rerank) shown per
+  answer, grounded badge, scored citation cards, and a **per-request model
+  picker** (mock / Ollama / configured provider)
 - **reference** — INCOTERMS 2020 rule cards and HS-code lookup
-- a persisted **light / dark theme** toggle
+- a persisted **light / dark theme** toggle, in a warm **Freight Amber** palette
+
+The UI ships as part of `docker compose up` (served on **:3000**). For a hot-reload
+dev loop instead:
 
 ```bash
-docker compose up --build                     # API on :8080
-cd frontend && npm install && npm run dev     # UI  on :5173  (sign in: admin / admin12345)
+cd frontend && npm install && npm run dev     # UI on :5173, proxies /api to :8080
 ```
 
 See [`frontend/README.md`](./frontend/README.md) for details.
@@ -185,6 +202,10 @@ See [`frontend/README.md`](./frontend/README.md) for details.
 | `search_hs_codes` | `LookupHsCodeUseCase` | HS tariff code by free-text description |
 | `summarize_shipment` | `AnswerQueryUseCase` + `ListDocumentsUseCase` | Structured summary of one document |
 | `ingest_cargo_document` | `IngestDocumentUseCase` | Push a new document into the corpus |
+
+The server also exposes MCP **prompts** — `compare_bl_to_invoice`,
+`letter_of_credit_compliance_check`, `port_handover_brief` — and **resources**:
+`cargo://documents` (index) and `cargo://documents/{id}` (a document's full text).
 
 ## 🧠 Model providers
 
@@ -252,11 +273,16 @@ docs/                       # model-providers guide + ADRs + diagrams
 - [x] **Per-request model selection** (provider + model) from the UI
 - [x] **Document delete** cascading JPA + pgvector
 - [x] **Corpus overview** endpoint + dashboard
-- [ ] **MCP Resources** — expose each `Document` at `cargo://documents/{id}`
-- [ ] **MCP Prompts** — `compare_bl_to_invoice`, `letter_of_credit_compliance_check`, …
-- [ ] **Re-ranking** — a cross-encoder between retrieval and generation
-- [ ] **PDF ingest** — a `PdfDocumentParser` on the Tika reader (dep already present)
-- [ ] **HS taxonomy** — full WCO HS 2022 export, FTS-backed once size justifies it
+- [x] **MCP Resources** — `cargo://documents` + `cargo://documents/{id}`
+- [x] **MCP Prompts** — `compare_bl_to_invoice`, `letter_of_credit_compliance_check`, `port_handover_brief`
+- [x] **Hybrid retrieval** — dense (pgvector) + sparse (Postgres FTS) fused with RRF
+- [x] **Multi-query rewriting** + **MMR re-ranking** (both dependency-free / zero-key)
+- [x] **Conversational memory** — multi-turn RAG chat threaded by `conversationId`
+- [x] **File ingest** — PDF / DOCX / HTML / TXT via the Tika reader (`POST /documents/upload`)
+- [x] **HS search** — token-aware ranked search over an expanded schedule
+- [x] **Single `docker compose up`** — web + API + pgvector + Adminer, zero-key by default
+- [ ] **Cross-encoder re-ranker** — swap the MMR reranker for a hosted rerank model
+- [ ] **Deploy target** — Fly.io / Railway one-click
 
 ## 🤝 Contributing
 
