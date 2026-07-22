@@ -128,6 +128,9 @@ export const api = {
     });
   },
 
+  documentContent: (id: string) =>
+    request<import("./types").DocumentContent>(`/api/v1/documents/${id}/content`),
+
   deleteDocument: (id: string) =>
     request<void>(`/api/v1/documents/${id}`, { method: "DELETE" }),
 

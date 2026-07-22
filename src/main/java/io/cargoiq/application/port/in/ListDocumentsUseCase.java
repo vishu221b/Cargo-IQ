@@ -19,4 +19,7 @@ public interface ListDocumentsUseCase {
     List<Document> list(Optional<DocumentType> filterByType, int limit, int offset);
 
     Document byId(UUID id);
+
+    /** The document's full text, reassembled from its indexed chunks in order. */
+    String content(UUID id);
 }

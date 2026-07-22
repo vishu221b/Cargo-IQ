@@ -58,6 +58,13 @@ export interface DocumentSummary {
   metadata: DocumentMetadata;
 }
 
+export interface DocumentContent {
+  id: string;
+  title: string;
+  type: DocumentType;
+  content: string;
+}
+
 export interface Citation {
   documentId: string;
   chunkId: string;
