@@ -18,7 +18,7 @@ export function AuroraBackground({
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -left-1/4 -top-1/4 h-[60vh] w-[60vh] animate-aurora rounded-full bg-accent/25 blur-[120px]" />
         <div className="absolute -right-1/4 top-1/3 h-[55vh] w-[55vh] animate-aurora rounded-full bg-cyanish/20 blur-[120px] [animation-delay:-6s]" />
-        <div className="absolute bottom-0 left-1/3 h-[45vh] w-[45vh] animate-aurora rounded-full bg-fuchsia-500/15 blur-[120px] [animation-delay:-12s]" />
+        <div className="absolute bottom-0 left-1/3 h-[45vh] w-[45vh] animate-aurora rounded-full bg-orange-500/15 blur-[120px] [animation-delay:-12s]" />
         <div className="absolute inset-0 [background:radial-gradient(ellipse_at_top,transparent_30%,rgb(var(--bg)/0.9))]" />
       </div>
       {children}
@@ -47,7 +47,7 @@ export function Spotlight({ className }: { className?: string }) {
     <div
       className={cn(
         "pointer-events-none absolute -top-40 left-1/2 -z-10 h-[40rem] w-[40rem] -translate-x-1/2",
-        "rounded-full bg-[conic-gradient(from_180deg_at_50%_50%,rgba(124,92,255,0.18),rgba(34,211,238,0.12),transparent_60%)]",
+        "rounded-full bg-[conic-gradient(from_180deg_at_50%_50%,rgba(245,158,11,0.18),rgba(56,189,248,0.12),transparent_60%)]",
         "blur-3xl",
         className,
       )}

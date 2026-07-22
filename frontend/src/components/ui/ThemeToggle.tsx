@@ -23,7 +23,7 @@ export default function ThemeToggle({ className }: { className?: string }) {
         transition={{ type: "spring", stiffness: 500, damping: 32 }}
         className={cn(
           "grid h-6 w-6 place-items-center rounded-full bg-gradient-to-br shadow-glow",
-          isDark ? "from-accent to-fuchsia-500" : "from-amber-400 to-orange-500",
+          isDark ? "from-accent to-orange-500" : "from-amber-400 to-orange-500",
         )}
         style={{ marginLeft: isDark ? 0 : "auto" }}
       >

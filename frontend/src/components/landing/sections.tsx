@@ -87,7 +87,7 @@ const FEATURES = [
     title: "Bring any model — or none",
     body: "Ships with a dependency-free mock so it runs with zero keys. Switch to OpenAI, Anthropic, Gemini or local Ollama per request.",
     span: "",
-    accent: "from-fuchsia-500/20",
+    accent: "from-orange-500/20",
   },
   {
     icon: Database,
@@ -202,7 +202,7 @@ export function HowItWorks() {
           <div className="absolute left-[19px] top-2 h-full w-px bg-line/[0.10] md:left-1/2 md:-translate-x-1/2">
             <motion.div
               style={{ height }}
-              className="w-px bg-gradient-to-b from-accent via-fuchsia-400 to-cyanish"
+              className="w-px bg-gradient-to-b from-accent via-orange-400 to-cyanish"
             />
           </div>
 

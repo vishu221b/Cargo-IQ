@@ -18,24 +18,27 @@ export default {
         fg: "rgb(var(--fg) / <alpha-value>)",
         muted: "rgb(var(--muted) / <alpha-value>)",
         faint: "rgb(var(--faint) / <alpha-value>)",
-        // Refined slate base with a violet→cyan accent system.
+        // Charcoal base with a "Freight Amber" accent system: amber primary,
+        // steel-blue support. Warm, industrial, container-yard energy.
         ink: {
-          950: "#070912",
-          900: "#0b0e1a",
-          850: "#0f1320",
-          800: "#141a2b",
-          700: "#1c2436",
-          600: "#2a3447",
+          950: "#070c12",
+          900: "#0b0f17",
+          850: "#0f141d",
+          800: "#161c27",
+          700: "#1e2635",
+          600: "#2a3346",
         },
         accent: {
-          DEFAULT: "#7c5cff",
-          soft: "#9b86ff",
-          glow: "#a78bfa",
+          DEFAULT: "#f59e0b", // amber-500
+          soft: "#fbbf24", // amber-400
+          glow: "#fcd34d", // amber-300
         },
-        cyanish: "#22d3ee",
+        // Steel-blue support colour (kept under the historical `cyanish` name so
+        // existing gradients/badges pick it up without a mass rename).
+        cyanish: "#38bdf8", // sky-400
       },
       boxShadow: {
-        glow: "0 0 40px -10px rgba(124,92,255,0.45)",
+        glow: "0 0 40px -10px rgba(245,158,11,0.45)",
         card: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 20px 50px -20px rgba(0,0,0,0.6)",
       },
       keyframes: {
