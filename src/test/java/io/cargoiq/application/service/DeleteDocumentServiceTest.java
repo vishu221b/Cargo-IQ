@@ -67,7 +67,7 @@ class DeleteDocumentServiceTest {
             implements DocumentRepository {
         @Override public Document save(Document d) { return d; }
         @Override public Optional<Document> findById(UUID id) { return stored; }
-        @Override public List<Document> findAll(Optional<DocumentType> t, int limit) { return List.of(); }
+        @Override public List<Document> findAll(Optional<DocumentType> t, int limit, int offset) { return List.of(); }
         @Override public void deleteById(UUID id) { calls.add("repo.delete:" + id); }
         @Override public long count() { return stored.isPresent() ? 1 : 0; }
         @Override public java.util.Map<DocumentType, Long> countByType() { return java.util.Map.of(); }

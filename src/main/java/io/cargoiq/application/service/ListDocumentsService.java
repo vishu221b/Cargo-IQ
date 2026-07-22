@@ -21,8 +21,8 @@ public class ListDocumentsService implements ListDocumentsUseCase {
     }
 
     @Override
-    public List<Document> list(Optional<DocumentType> filterByType, int limit) {
-        return repository.findAll(filterByType, limit);
+    public List<Document> list(Optional<DocumentType> filterByType, int limit, int offset) {
+        return repository.findAll(filterByType, limit, Math.max(0, offset));
     }
 
     @Override

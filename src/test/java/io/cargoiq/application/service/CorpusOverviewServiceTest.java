@@ -45,7 +45,7 @@ class CorpusOverviewServiceTest {
             Map<Incoterm, Long> byIncoterm) implements DocumentRepository {
         @Override public Document save(Document d) { return d; }
         @Override public Optional<Document> findById(UUID id) { return Optional.empty(); }
-        @Override public List<Document> findAll(Optional<DocumentType> t, int limit) { return List.of(); }
+        @Override public List<Document> findAll(Optional<DocumentType> t, int limit, int offset) { return List.of(); }
         @Override public void deleteById(UUID id) { }
         @Override public long count() { return total; }
         @Override public Map<DocumentType, Long> countByType() { return byType; }

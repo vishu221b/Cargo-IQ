@@ -3,15 +3,19 @@ package io.cargoiq.adapter.in.web.dto;
 import io.cargoiq.domain.model.DocumentType;
 import io.cargoiq.domain.model.Incoterm;
 import io.cargoiq.domain.model.ModelChoice;
+import io.cargoiq.domain.model.RetrievalOptions;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * A RAG query. {@code provider} and {@code model} let the caller choose the chat
- * model per request — e.g. {@code "ollama"} + {@code "gemma2:9b"}, or the default
- * {@code "mock"} which needs no API key or model server.
+ * A RAG query.
+ *
+ * <p>{@code provider} and {@code model} let the caller choose the chat model per
+ * request. {@code hybrid} / {@code multiQuery} / {@code rerank} toggle the
+ * retrieval-pipeline stages (all default on). {@code conversationId} threads
+ * multi-turn memory — reuse the same id across follow-up questions.
  */
 public record QueryRequest(
         @NotBlank @Size(max = 2000) String query,
@@ -19,7 +23,11 @@ public record QueryRequest(
         DocumentType filterByType,
         Incoterm filterByIncoterm,
         @Size(max = 32) String provider,
-        @Size(max = 64) String model) {
+        @Size(max = 64) String model,
+        Boolean hybrid,
+        Boolean multiQuery,
+        Boolean rerank,
+        @Size(max = 64) String conversationId) {
 
     public int topKOrDefault() { return topK != null ? topK : 6; }
 
@@ -29,5 +37,13 @@ public record QueryRequest(
             return null;
         }
         return new ModelChoice(provider, model);
+    }
+
+    /** Retrieval switches; each stage defaults to on when the field is omitted. */
+    public RetrievalOptions retrievalOptions() {
+        return new RetrievalOptions(
+                hybrid == null || hybrid,
+                multiQuery == null || multiQuery,
+                rerank == null || rerank);
     }
 }

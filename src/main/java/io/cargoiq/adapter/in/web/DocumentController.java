@@ -10,9 +10,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -55,12 +58,34 @@ public class DocumentController {
                 .body(body);
     }
 
-    @Operation(summary = "List documents (optionally filtered by type)")
+    @Operation(summary = "Ingest an uploaded file — PDF, DOCX, HTML or TXT (chunks, embeds, indexes)")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentResponse> upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("type") DocumentType type,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "sourceUri", required = false) String sourceUri) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        String effectiveTitle = (title != null && !title.isBlank())
+                ? title.trim()
+                : (file.getOriginalFilename() != null ? file.getOriginalFilename() : "Uploaded document");
+        var saved = ingest.ingestFile(new IngestDocumentUseCase.IngestFileCommand(
+                effectiveTitle, type, sourceUri,
+                file.getOriginalFilename(), file.getContentType(), file.getBytes()));
+        return ResponseEntity
+                .created(URI.create("/api/v1/documents/" + saved.id()))
+                .body(DocumentResponse.from(saved));
+    }
+
+    @Operation(summary = "List documents (optionally filtered by type, paged)")
     @GetMapping
     public List<DocumentResponse> list(
             @RequestParam(required = false) DocumentType type,
-            @RequestParam(defaultValue = "50") int limit) {
-        return listing.list(Optional.ofNullable(type), limit).stream()
+            @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(defaultValue = "0") int offset) {
+        return listing.list(Optional.ofNullable(type), limit, offset).stream()
                 .map(DocumentResponse::from)
                 .toList();
     }

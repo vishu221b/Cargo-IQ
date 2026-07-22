@@ -17,6 +17,12 @@ public interface IngestDocumentUseCase {
     Document ingest(IngestCommand command);
 
     /**
+     * Ingest an uploaded binary file (PDF, DOCX, HTML, TXT, …). The file's text
+     * is extracted first, then the flow is identical to {@link #ingest}.
+     */
+    Document ingestFile(IngestFileCommand command);
+
+    /**
      * The data needed to perform an ingest. A command object (vs. positional
      * parameters) keeps the use-case interface stable as fields are added.
      */
@@ -25,4 +31,13 @@ public interface IngestDocumentUseCase {
             DocumentType type,
             String sourceUri,
             String rawText) {}
+
+    /** An ingest from an uploaded file — text is extracted by the use case. */
+    record IngestFileCommand(
+            String title,
+            DocumentType type,
+            String sourceUri,
+            String filename,
+            String contentType,
+            byte[] bytes) {}
 }

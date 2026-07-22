@@ -10,7 +10,13 @@ import java.util.UUID;
 /** Inbound port: list / fetch documents already in the corpus. */
 public interface ListDocumentsUseCase {
 
-    List<Document> list(Optional<DocumentType> filterByType, int limit);
+    /** First page (offset 0). */
+    default List<Document> list(Optional<DocumentType> filterByType, int limit) {
+        return list(filterByType, limit, 0);
+    }
+
+    /** A page of documents, newest first, skipping {@code offset} rows. */
+    List<Document> list(Optional<DocumentType> filterByType, int limit, int offset);
 
     Document byId(UUID id);
 }

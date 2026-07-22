@@ -81,12 +81,53 @@ public class HsCodeReferenceData implements ReferenceDataPort {
     @Override
     public List<HsCode> searchHsCodes(String descriptionLike, int limit) {
         if (descriptionLike == null || descriptionLike.isBlank()) return List.of();
-        String needle = descriptionLike.toLowerCase(Locale.ROOT);
-        // Substring match — naive but predictable. Upgrade to Postgres full-text
-        // or a small in-memory BM25 (Lucene RAMDirectory) when the corpus grows.
+        String query = descriptionLike.trim();
+
+        // Numeric query → treat as an HS code prefix lookup (e.g. "85" → chapter 85).
+        if (query.matches("\\d{2,10}")) {
+            return all.stream()
+                    .filter(c -> c.code().startsWith(query))
+                    .sorted(Comparator.comparing(HsCode::code))
+                    .limit(limit)
+                    .collect(Collectors.toList());
+        }
+
+        // Free-text: token-aware ranked search (word > prefix > substring), all
+        // query terms must contribute. Approximates full-text ranking without a
+        // DB round-trip; swap for Postgres FTS behind this port when the schedule
+        // grows to national-tariff scale.
+        String[] terms = query.toLowerCase(Locale.ROOT).split("[^a-z0-9]+");
         return all.stream()
-                .filter(c -> c.description().toLowerCase(Locale.ROOT).contains(needle))
+                .map(c -> new Scored(c, score(c, terms)))
+                .filter(s -> s.score > 0)
+                .sorted(Comparator.comparingDouble((Scored s) -> s.score).reversed()
+                        .thenComparing(s -> s.code.code()))
                 .limit(limit)
+                .map(s -> s.code)
                 .collect(Collectors.toList());
     }
+
+    /** Sum per-term relevance; returns 0 when any non-blank term matches nothing (AND semantics). */
+    private static double score(HsCode c, String[] terms) {
+        String desc = c.description().toLowerCase(Locale.ROOT);
+        String[] words = desc.split("[^a-z0-9]+");
+        double total = 0;
+        int meaningfulTerms = 0;
+        for (String term : terms) {
+            if (term.length() < 2) continue;
+            meaningfulTerms++;
+            double best = 0;
+            for (String w : words) {
+                if (w.equals(term)) { best = Math.max(best, 3); }
+                else if (w.startsWith(term)) { best = Math.max(best, 2); }
+                else if (w.contains(term)) { best = Math.max(best, 1); }
+            }
+            if (best == 0 && desc.contains(term)) best = 0.5; // spans word boundary
+            if (best == 0) return 0; // this term matched nothing → drop the row
+            total += best;
+        }
+        return meaningfulTerms == 0 ? 0 : total;
+    }
+
+    private record Scored(HsCode code, double score) {}
 }

@@ -1,7 +1,7 @@
 package io.cargoiq.adapter.out.persistence.jpa;
 
 import io.cargoiq.domain.model.DocumentType;
-import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,7 +22,7 @@ public interface DocumentJpaRepository extends JpaRepository<DocumentEntity, UUI
              where (:type is null or d.type = :type)
              order by d.ingestedAt desc
             """)
-    List<DocumentEntity> findFiltered(@Param("type") DocumentType type, Limit limit);
+    List<DocumentEntity> findFiltered(@Param("type") DocumentType type, Pageable pageable);
 
     @Query("select d.type, count(d) from DocumentEntity d group by d.type")
     List<Object[]> countGroupedByType();
