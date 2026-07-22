@@ -88,6 +88,28 @@ export interface RetrievalOptions {
   rerank: boolean;
 }
 
+export interface Conversation {
+  id: string;
+  title: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
+export interface ConversationMessage {
+  role: "USER" | "ASSISTANT";
+  content: string;
+  createdAt: string;
+}
+
+export interface ConversationDetail {
+  id: string;
+  title: string | null;
+  createdAt: string;
+  updatedAt: string;
+  messages: ConversationMessage[];
+}
+
 export interface Overview {
   totalDocuments: number;
   documentsByType: Record<string, number>;

@@ -2,7 +2,6 @@ package io.cargoiq.adapter.out.memory;
 
 import io.cargoiq.application.port.out.ChatMemoryPort;
 import io.cargoiq.domain.model.ConversationTurn;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -14,14 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * Bounded, in-process conversational memory.
  *
  * <p>Keeps a rolling window of the most recent turns per conversation id — no
- * external store, no API key, so multi-turn RAG works out of the box. A
- * production deployment would swap this for a JPA- or Redis-backed adapter
- * behind {@link ChatMemoryPort} (and add TTL/eviction), without touching the
- * answering service.
+ * external store. Superseded in the running app by {@link PersistentChatMemory}
+ * (DB-backed, so history survives restarts and feeds the chat-history UI); kept
+ * as a dependency-free implementation used by unit tests and as a fallback.
  *
  * @author Vishal Dogra
  */
-@Component
 public class InMemoryChatMemory implements ChatMemoryPort {
 
     /** Hard cap on retained turns per conversation to bound memory use. */
