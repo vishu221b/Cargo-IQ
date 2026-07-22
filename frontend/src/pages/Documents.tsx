@@ -12,7 +12,12 @@ import {
   FileUp,
 } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
-import { DOCUMENT_TYPES, type DocumentSummary, type DocumentType } from "@/lib/types";
+import {
+  DOCUMENT_TYPES,
+  type DocumentContent,
+  type DocumentSummary,
+  type DocumentType,
+} from "@/lib/types";
 import { useAuth } from "@/auth/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -45,6 +50,7 @@ export default function Documents() {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [viewing, setViewing] = useState<DocumentSummary | null>(null);
 
   async function load() {
     setDocs(null);
@@ -137,7 +143,11 @@ export default function Documents() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(i * 0.03, 0.3) }}
               >
-                <Card className="flex items-start gap-4 p-4 transition hover:border-line/[0.12]">
+                <Card
+                  onClick={() => setViewing(doc)}
+                  className="flex cursor-pointer items-start gap-4 p-4 transition hover:border-accent/30"
+                  title="Open document"
+                >
                   <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-line/[0.05] text-fg">
                     <FileText className="h-5 w-5" />
                   </div>
@@ -165,7 +175,10 @@ export default function Documents() {
                   </div>
                   {isAdmin && (
                     <button
-                      onClick={() => remove(doc)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remove(doc);
+                      }}
                       className="rounded-lg p-2 text-faint transition hover:bg-rose-500/10 hover:text-rose-300"
                       title="Delete"
                     >
@@ -188,6 +201,10 @@ export default function Documents() {
       )}
 
       <AnimatePresence>
+        {viewing && <DocumentViewer doc={viewing} onClose={() => setViewing(null)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {showIngest && (
           <IngestModal
             onClose={() => setShowIngest(false)}
@@ -200,6 +217,101 @@ export default function Documents() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function DocumentViewer({ doc, onClose }: { doc: DocumentSummary; onClose: () => void }) {
+  const toast = useToast();
+  const [content, setContent] = useState<DocumentContent | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const c = await api.documentContent(doc.id);
+        if (active) setContent(c);
+      } catch (e) {
+        if (active) setError(e instanceof ApiError ? e.message : "Failed to load document");
+        toast.error("Failed to load document text");
+      }
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doc.id]);
+
+  const m = doc.metadata;
+  const facts: [string, string | null][] = [
+    ["Vessel", m.vesselName],
+    ["BL number", m.blNumber],
+    ["Loading", m.portOfLoading],
+    ["Discharge", m.portOfDischarge],
+    ["INCOTERM", m.incoterm],
+    ["Value", m.invoiceValue != null ? `${m.currency ?? ""} ${m.invoiceValue.toLocaleString()}` : null],
+    ["Consignee", m.consignee],
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 grid place-items-center bg-bg/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 12 }}
+        transition={{ type: "spring", stiffness: 320, damping: 28 }}
+        onClick={(e) => e.stopPropagation()}
+        className="glass-strong flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl p-6 shadow-card"
+      >
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="mb-1 flex items-center gap-2">
+              <Badge tone={TYPE_TONE[doc.type] ?? "default"}>{humanize(doc.type)}</Badge>
+              <span className="text-xs text-faint">{doc.chunkCount} chunks · {formatDate(doc.ingestedAt)}</span>
+            </div>
+            <h2 className="truncate text-lg font-semibold text-fg">{doc.title}</h2>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-faint hover:bg-line/[0.05] hover:text-fg">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {facts.some(([, v]) => v) && (
+          <div className="mb-4 grid grid-cols-2 gap-x-6 gap-y-1.5 rounded-xl bg-line/[0.04] p-3 text-sm sm:grid-cols-3">
+            {facts
+              .filter(([, v]) => v)
+              .map(([k, v]) => (
+                <div key={k} className="min-w-0">
+                  <span className="block text-[10px] uppercase tracking-wider text-faint">{k}</span>
+                  <span className="block truncate text-fg">{v}</span>
+                </div>
+              ))}
+          </div>
+        )}
+
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-line/[0.08] bg-surface/50 p-4">
+          {error ? (
+            <p className="text-sm text-rose-300">{error}</p>
+          ) : content === null ? (
+            <div className="grid place-items-center py-12">
+              <Spinner />
+            </div>
+          ) : content.content.trim() === "" ? (
+            <p className="text-sm text-faint">No extracted text is indexed for this document.</p>
+          ) : (
+            <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-relaxed text-fg">
+              {content.content}
+            </pre>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

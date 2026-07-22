@@ -1,5 +1,6 @@
 package io.cargoiq.adapter.in.web;
 
+import io.cargoiq.adapter.in.web.dto.DocumentContentResponse;
 import io.cargoiq.adapter.in.web.dto.DocumentResponse;
 import io.cargoiq.adapter.in.web.dto.IngestRequest;
 import io.cargoiq.application.port.in.DeleteDocumentUseCase;
@@ -94,6 +95,13 @@ public class DocumentController {
     @GetMapping("/{id}")
     public DocumentResponse byId(@PathVariable UUID id) {
         return DocumentResponse.from(listing.byId(id));
+    }
+
+    @Operation(summary = "Get a document's full extracted text (for the in-app viewer)")
+    @GetMapping("/{id}/content")
+    public DocumentContentResponse content(@PathVariable UUID id) {
+        var doc = listing.byId(id);
+        return new DocumentContentResponse(doc.id(), doc.title(), doc.type(), listing.content(id));
     }
 
     @Operation(summary = "Delete a document and all of its indexed chunks (ADMIN only)")

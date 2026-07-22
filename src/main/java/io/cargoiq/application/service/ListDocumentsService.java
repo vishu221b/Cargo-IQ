@@ -1,6 +1,7 @@
 package io.cargoiq.application.service;
 
 import io.cargoiq.application.port.in.ListDocumentsUseCase;
+import io.cargoiq.application.port.out.DocumentContentPort;
 import io.cargoiq.application.port.out.DocumentRepository;
 import io.cargoiq.domain.exception.DocumentNotFoundException;
 import io.cargoiq.domain.model.Document;
@@ -15,9 +16,11 @@ import java.util.UUID;
 public class ListDocumentsService implements ListDocumentsUseCase {
 
     private final DocumentRepository repository;
+    private final DocumentContentPort documentContent;
 
-    public ListDocumentsService(DocumentRepository repository) {
+    public ListDocumentsService(DocumentRepository repository, DocumentContentPort documentContent) {
         this.repository = repository;
+        this.documentContent = documentContent;
     }
 
     @Override
@@ -29,5 +32,12 @@ public class ListDocumentsService implements ListDocumentsUseCase {
     public Document byId(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new DocumentNotFoundException(id));
+    }
+
+    @Override
+    public String content(UUID id) {
+        // Validate existence first (404 vs. empty text for a real-but-unindexed doc).
+        byId(id);
+        return documentContent.joinedText(id);
     }
 }
