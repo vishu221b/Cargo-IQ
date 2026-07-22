@@ -10,15 +10,34 @@ package io.cargoiq.domain.model;
  * optional — a null/blank provider means "use the server default", which is the
  * dependency-free {@code mock} unless the deployment configured something else.
  *
+ * <p>{@code apiKey} is a <b>transient, per-request</b> field — the caller's own
+ * key for the chosen provider, resolved by the web layer from encrypted storage
+ * so the chat model can be built on the user's behalf. It is never persisted on
+ * this record and never leaves the server.
+ *
  * @author Vishal Dogra
  */
-public record ModelChoice(String provider, String model) {
+public record ModelChoice(String provider, String model, String apiKey) {
 
     public static final String MOCK = "mock";
 
+    /** Backward-compatible constructor for callers that don't bring a key. */
+    public ModelChoice(String provider, String model) {
+        this(provider, model, null);
+    }
+
     /** The default, dependency-free choice — no API key, no local model server. */
     public static ModelChoice mock() {
-        return new ModelChoice(MOCK, MOCK);
+        return new ModelChoice(MOCK, MOCK, null);
+    }
+
+    /** A copy of this choice carrying the user's resolved API key. */
+    public ModelChoice withApiKey(String key) {
+        return new ModelChoice(provider, model, key);
+    }
+
+    public boolean hasApiKey() {
+        return apiKey != null && !apiKey.isBlank();
     }
 
     public boolean hasProvider() {

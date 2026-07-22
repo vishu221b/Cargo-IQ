@@ -164,6 +164,21 @@ export const api = {
   deleteConversation: (id: string) =>
     request<void>(`/api/v1/conversations/${id}`, { method: "DELETE" }),
 
+  // --- settings: per-user LLM API keys ---
+  getApiKeys: () =>
+    request<import("./types").ApiKeysStatus>("/api/v1/settings/api-keys"),
+
+  setApiKey: (provider: string, apiKey: string) =>
+    request<void>(`/api/v1/settings/api-keys/${encodeURIComponent(provider)}`, {
+      method: "PUT",
+      body: JSON.stringify({ apiKey }),
+    }),
+
+  deleteApiKey: (provider: string) =>
+    request<void>(`/api/v1/settings/api-keys/${encodeURIComponent(provider)}`, {
+      method: "DELETE",
+    }),
+
   incoterm: (code: string) =>
     request<IncotermDetail>(`/api/v1/incoterms/${encodeURIComponent(code)}`),
 

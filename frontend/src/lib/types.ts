@@ -131,3 +131,8 @@ export interface HsCode {
   description: string;
   chapter: string;
 }
+
+export interface ApiKeysStatus {
+  supported: string[];
+  configured: string[];
+}
