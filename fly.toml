@@ -1,0 +1,50 @@
+# Fly.io deployment for the cargo-iq backend (REST API + embedded MCP server).
+# Postgres with pgvector is provisioned separately and attached as secrets —
+# see docs/deployment.md for the full walkthrough. The SPA can be deployed as a
+# second Fly app (frontend/Dockerfile) or any static host pointed at this API.
+#
+#   fly launch --no-deploy      # first time (creates the app)
+#   fly postgres create ...     # a pgvector-capable Postgres
+#   fly secrets set POSTGRES_URL=... JWT_SECRET=... SECRETS_KEY=...
+#   fly deploy
+
+app = "cargo-iq"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  SPRING_PROFILES_ACTIVE = "prod"
+  SERVER_PORT = "8080"
+  # Zero-key defaults; override to a real provider via secrets if desired.
+  AI_CHAT_PROVIDER = "mock"
+  AI_EMBEDDING_PROVIDER = "none"
+  VECTOR_DIMENSIONS = "1536"
+  # CORS: set to the deployed SPA origin (or serve the SPA same-origin behind a proxy).
+  CORS_ALLOWED_ORIGINS = "https://cargo-iq-web.fly.dev"
+
+# Secrets (set with `fly secrets set ...`, never commit):
+#   POSTGRES_URL   jdbc:postgresql://<host>:5432/<db>
+#   POSTGRES_USER, POSTGRES_PASSWORD
+#   JWT_SECRET     >= 32 bytes
+#   SECRETS_KEY, SECRETS_SALT   (encrypt per-user API keys)
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    interval = "15s"
+    timeout = "4s"
+    grace_period = "40s"
+    method = "get"
+    path = "/actuator/health"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
