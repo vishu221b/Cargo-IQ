@@ -37,7 +37,10 @@ async function request<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const headers = new Headers(options.headers);
-  if (options.body && !headers.has("Content-Type")) {
+  // JSON by default, but never for FormData — the browser must set the
+  // multipart/form-data boundary itself.
+  const isFormData = options.body instanceof FormData;
+  if (options.body && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
   const token = tokenStore.get();
@@ -87,10 +90,11 @@ export const api = {
   // --- corpus ---
   overview: () => request<Overview>("/api/v1/overview"),
 
-  listDocuments: (type?: DocumentType, limit = 50) => {
+  listDocuments: (type?: DocumentType, limit = 50, offset = 0) => {
     const params = new URLSearchParams();
     if (type) params.set("type", type);
     params.set("limit", String(limit));
+    params.set("offset", String(offset));
     return request<DocumentSummary[]>(`/api/v1/documents?${params}`);
   },
 
@@ -105,6 +109,25 @@ export const api = {
       body: JSON.stringify(input),
     }),
 
+  // Multipart upload — PDF/DOCX/HTML/TXT are extracted server-side (Tika).
+  // Note: no Content-Type header — the browser sets the multipart boundary.
+  uploadDocument: (input: {
+    file: File;
+    type: DocumentType;
+    title?: string;
+    sourceUri?: string;
+  }) => {
+    const form = new FormData();
+    form.append("file", input.file);
+    form.append("type", input.type);
+    if (input.title) form.append("title", input.title);
+    if (input.sourceUri) form.append("sourceUri", input.sourceUri);
+    return request<DocumentSummary>("/api/v1/documents/upload", {
+      method: "POST",
+      body: form,
+    });
+  },
+
   deleteDocument: (id: string) =>
     request<void>(`/api/v1/documents/${id}`, { method: "DELETE" }),
 
@@ -115,6 +138,10 @@ export const api = {
     filterByType?: DocumentType | null;
     provider?: string;
     model?: string;
+    hybrid?: boolean;
+    multiQuery?: boolean;
+    rerank?: boolean;
+    conversationId?: string;
   }) =>
     request<QueryResult>("/api/v1/query", {
       method: "POST",
