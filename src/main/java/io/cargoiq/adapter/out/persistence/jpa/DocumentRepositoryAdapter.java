@@ -4,7 +4,7 @@ import io.cargoiq.application.port.out.DocumentRepository;
 import io.cargoiq.domain.model.Document;
 import io.cargoiq.domain.model.DocumentType;
 import io.cargoiq.domain.model.Incoterm;
-import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.util.EnumMap;
@@ -45,8 +45,10 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
     }
 
     @Override
-    public List<Document> findAll(Optional<DocumentType> filterByType, int limit) {
-        return jpa.findFiltered(filterByType.orElse(null), Limit.of(limit)).stream()
+    public List<Document> findAll(Optional<DocumentType> filterByType, int limit, int offset) {
+        int size = Math.max(1, limit);
+        int page = size == 0 ? 0 : offset / size; // offsets are page-aligned by callers
+        return jpa.findFiltered(filterByType.orElse(null), PageRequest.of(page, size)).stream()
                 .map(DocumentEntity::toDomain)
                 .toList();
     }

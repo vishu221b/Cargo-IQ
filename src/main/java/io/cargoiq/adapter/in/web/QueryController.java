@@ -48,8 +48,10 @@ public class QueryController {
                 req.topKOrDefault(),
                 Optional.ofNullable(req.filterByType()),
                 Optional.ofNullable(req.filterByIncoterm()),
-                req.modelChoice());
-        return QueryResponse.from(answerQuery.answer(query));
+                req.modelChoice(),
+                req.retrievalOptions(),
+                req.conversationId());
+        return QueryResponse.from(answerQuery.answer(query), query);
     }
 
     @Operation(summary = "Look up an INCOTERM 2020 rule by code (e.g. CIF, FOB, DDP)")

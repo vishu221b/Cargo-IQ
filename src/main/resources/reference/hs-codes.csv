@@ -1,51 +1,116 @@
-# Harmonised System (HS) — representative subset for the cargo-iq scaffold.
-# Source: WCO HS 2022. This is NOT exhaustive — it's a hand-curated slice that
-# covers chapters commonly seen in maritime container trades, so demo queries
-# return something interesting. To load the full schedule, replace this file
-# with the WCO CSV export (5,000+ rows at 6-digit) and bump the
-# HsCodeReferenceData log message expectations in tests.
+# Harmonised System (HS) — curated slice for the cargo-iq corpus.
+# Source: WCO HS 2022. This is NOT exhaustive — it's a hand-curated cross-section
+# spanning the chapters commonly seen in maritime container and trade-finance
+# flows, broad enough that description searches return useful, ranked results.
+# To load the full schedule, replace this file with the WCO CSV export (5,000+
+# rows at 6-digit) — the ranked search in HsCodeReferenceData scales to it.
 #
 # Format: code,description,chapter
 code,description,chapter
+0201,"Meat of bovine animals, fresh or chilled",02
+0203,"Meat of swine, fresh, chilled or frozen",02
+0303,"Fish, frozen, excluding fish fillets",03
+0306,"Crustaceans, whether in shell or not, live, fresh, chilled or frozen (shrimp, lobster, crab)",03
+0402,"Milk and cream, concentrated or containing added sugar",04
+0406,Cheese and curd,04
+0603,"Cut flowers and flower buds for bouquets or ornamental purposes, fresh",06
+0709,"Other vegetables, fresh or chilled",07
+0803,"Bananas, including plantains, fresh or dried",08
+0805,"Citrus fruit, fresh or dried (oranges, lemons, limes)",08
 0901,Coffee whether or not roasted or decaffeinated,09
 0902,"Tea, whether or not flavoured",09
 0904,"Pepper of the genus Piper; dried or crushed or ground fruits of the genus Capsicum",09
+0910,"Ginger, saffron, turmeric, thyme, bay leaves, curry and other spices",09
 1006,Rice,10
+1008,"Buckwheat, millet and canary seed; other cereals",10
+1101,Wheat or meslin flour,11
+1201,"Soya beans, whether or not broken",12
+1511,"Palm oil and its fractions, whether or not refined",15
 1701,Cane or beet sugar and chemically pure sucrose in solid form,17
+1806,Chocolate and other food preparations containing cocoa,18
+1905,"Bread, pastry, cakes, biscuits and other bakers' wares",19
+2009,"Fruit and vegetable juices, unfermented",20
+2101,"Extracts, essences and concentrates of coffee, tea or mate",21
 2204,"Wine of fresh grapes, including fortified wines",22
+2208,"Undenatured ethyl alcohol; spirits, liqueurs and other spirituous beverages",22
+2402,"Cigars, cheroots, cigarillos and cigarettes of tobacco",24
+2523,"Portland cement, aluminous cement, slag cement and similar hydraulic cements",25
+2601,Iron ores and concentrates,26
+2701,"Coal; briquettes, ovoids and similar solid fuels manufactured from coal",27
+2709,Petroleum oils and oils obtained from bituminous minerals crude,27
 2710,"Petroleum oils and oils obtained from bituminous minerals, other than crude",27
+2711,Petroleum gases and other gaseous hydrocarbons (LNG, LPG),27
+2818,"Artificial corundum; aluminium oxide; aluminium hydroxide",28
+2905,"Acyclic alcohols and their halogenated, sulphonated, nitrated derivatives",29
 3004,"Medicaments consisting of mixed or unmixed products for therapeutic or prophylactic uses",30
+3002,"Human and animal blood; antisera, vaccines, toxins and cultures",30
+3208,"Paints and varnishes based on synthetic polymers, non-aqueous",32
+3304,"Beauty, make-up and skin-care preparations; manicure or pedicure preparations",33
+3401,"Soap; organic surface-active products for use as soap",34
+3402,"Organic surface-active agents; washing and cleaning preparations",34
+3808,"Insecticides, rodenticides, fungicides, herbicides and disinfectants",38
+3901,"Polymers of ethylene, in primary forms (polyethylene)",39
+3902,"Polymers of propylene or of other olefins, in primary forms",39
 3923,"Articles for the conveyance or packing of goods, of plastics",39
+3926,"Other articles of plastics",39
 4011,New pneumatic tyres of rubber,40
 4202,"Trunks, suit-cases, vanity-cases, executive-cases, briefcases",42
 4407,"Wood sawn or chipped lengthwise, sliced or peeled, exceeding 6 mm in thickness",44
+4409,"Wood continuously shaped along any edges, ends or faces",44
+4707,Recovered (waste and scrap) paper or paperboard,47
 4805,"Other uncoated paper and paperboard, in rolls or sheets",48
+4819,"Cartons, boxes, cases, bags and other packing containers of paper or paperboard",48
+4901,"Printed books, brochures, leaflets and similar printed matter",49
+5201,"Cotton, not carded or combed",52
 5208,"Woven fabrics of cotton, containing 85% or more by weight of cotton",52
+5407,Woven fabrics of synthetic filament yarn,54
 6109,"T-shirts, singlets and other vests, knitted or crocheted",61
+6110,"Jerseys, pullovers, cardigans, waistcoats, knitted or crocheted",61
 6204,"Women's or girls' suits, ensembles, jackets, dresses, skirts",62
+6205,Men's or boys' shirts,62
 6403,"Footwear with outer soles of rubber, plastics, leather and uppers of leather",64
+6802,"Worked monumental or building stone and articles thereof (granite, marble)",68
+6907,"Ceramic flags and paving, hearth or wall tiles",69
+7010,"Carboys, bottles, flasks, jars, pots of glass, for conveyance or packing",70
 7113,"Articles of jewellery and parts thereof, of precious metal",71
+7204,"Ferrous waste and scrap; remelting scrap ingots of iron or steel",72
 7208,"Flat-rolled products of iron or non-alloy steel, hot-rolled, in coils",72
+7210,"Flat-rolled products of iron or non-alloy steel, plated or coated",72
 7308,"Structures and parts of structures of iron or steel (e.g., bridges, towers)",73
 7321,"Stoves, ranges, grates, cookers, barbecues, braziers, gas-rings, of iron or steel",73
+7601,"Unwrought aluminium",76
+7604,"Aluminium bars, rods and profiles",76
 8407,Spark-ignition reciprocating or rotary internal combustion piston engines,84
 8408,Compression-ignition internal combustion piston engines (diesel or semi-diesel),84
+8413,"Pumps for liquids; liquid elevators",84
 8418,"Refrigerators, freezers and other refrigerating or freezing equipment",84
+8421,"Centrifuges; filtering or purifying machinery for liquids or gases",84
 8429,"Self-propelled bulldozers, angledozers, graders, levellers, scrapers",84
 8471,"Automatic data processing machines (computers) and units thereof",84
 8473,Parts and accessories of computers and peripherals,84
+8481,"Taps, cocks, valves and similar appliances for pipes, tanks or vats",84
+8501,"Electric motors and generators (excluding generating sets)",85
 8504,"Electrical transformers, static converters (rectifiers) and inductors",85
+8507,"Electric accumulators, including separators (lithium-ion batteries)",85
 8517,"Telephone sets, including telephones for cellular networks; smartphones",85
 8518,"Microphones, loudspeakers, headphones, earphones",85
 8528,"Monitors and projectors, not incorporating television reception apparatus",85
-8542,"Electronic integrated circuits",85
+8541,"Semiconductor devices; light-emitting diodes (LEDs); mounted piezo-electric crystals",85
+8542,Electronic integrated circuits,85
+8544,"Insulated wire, cable and other insulated electric conductors; optical fibre cables",85
 8703,"Motor cars and other motor vehicles principally designed for the transport of persons",87
 8704,Motor vehicles for the transport of goods,87
-8708,"Parts and accessories of motor vehicles",87
+8708,Parts and accessories of motor vehicles,87
 8711,"Motorcycles (including mopeds) and cycles fitted with an auxiliary motor",87
+8716,"Trailers and semi-trailers; other vehicles, not mechanically propelled",87
 8901,"Cruise ships, excursion boats, ferry-boats, cargo ships, barges",89
 8902,Fishing vessels; factory ships and other vessels for processing fishery products,89
+8906,"Other vessels, including warships and lifeboats other than rowing boats",89
 9018,"Instruments and appliances used in medical, surgical, dental or veterinary sciences",90
+9027,"Instruments for physical or chemical analysis (spectrometers, chromatographs)",90
+9031,"Measuring or checking instruments, appliances and machines",90
 9401,"Seats, whether or not convertible into beds, and parts thereof",94
-9403,"Other furniture and parts thereof",94
+9403,Other furniture and parts thereof,94
+9405,"Luminaires and lighting fittings; illuminated signs and nameplates",94
 9503,"Tricycles, scooters, pedal cars; dolls' carriages; dolls; toys",95
+9506,"Articles and equipment for general physical exercise, gymnastics, sports",95

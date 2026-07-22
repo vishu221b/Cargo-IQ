@@ -24,7 +24,7 @@ public interface DocumentRepository {
 
     Optional<Document> findById(UUID id);
 
-    List<Document> findAll(Optional<DocumentType> filterByType, int limit);
+    List<Document> findAll(Optional<DocumentType> filterByType, int limit, int offset);
 
     void deleteById(UUID id);
 
