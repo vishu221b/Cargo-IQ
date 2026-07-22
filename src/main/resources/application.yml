@@ -20,6 +20,14 @@ spring:
     exclude:
       - org.springframework.ai.model.google.genai.autoconfigure.embedding.GoogleGenAiEmbeddingConnectionAutoConfiguration
       - org.springframework.ai.model.google.genai.autoconfigure.embedding.GoogleGenAiTextEmbeddingAutoConfiguration
+      # cargo-iq uses only chat + embedding. The OpenAI starter also ships audio,
+      # image and moderation autoconfigs that activate by default (matchIfMissing)
+      # and hard-require an API key at startup — which would break the zero-key
+      # mock default. We don't use them, so exclude them.
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioSpeechAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiAudioTranscriptionAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiImageAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
 
   # ---------------------------------------------------------------------------
   # Postgres + pgvector. Same database, two consumers:
