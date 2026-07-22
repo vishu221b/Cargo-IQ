@@ -156,11 +156,14 @@ Aceternity / 21st.dev-style visual language. It drives the backend end to end:
 - JWT auth with role-aware gating (ingest/delete surface only for `ADMIN`)
 - a live corpus **dashboard** (`/api/v1/overview`) with animated breakdowns
 - **documents** — browse / filter / delete, paste-text **or file upload**
-  (PDF · DOCX · HTML · TXT), with "load more" pagination
-- **ask the corpus** — a multi-turn **RAG chat**: conversational memory,
-  toggleable **retrieval strategy** (hybrid · multi-query · rerank) shown per
-  answer, grounded badge, scored citation cards, and a **per-request model
-  picker** (mock / Ollama / configured provider)
+  (PDF · DOCX · HTML · TXT), "load more" pagination, and a click-to-open
+  **viewer** for a document's full text
+- **ask the corpus** — a multi-turn **RAG chat** with **saved per-user history**
+  (list / continue / new / delete): conversational memory, toggleable
+  **retrieval strategy** (hybrid · multi-query · rerank) shown per answer,
+  grounded badge, scored citation cards, and a **per-request model picker**
+- **settings** — store your own **OpenAI / Anthropic API keys** (encrypted) to
+  run real models on your account
 - **reference** — INCOTERMS 2020 rule cards and HS-code lookup
 - a persisted **light / dark theme** toggle, in a warm **Freight Amber** palette
 
@@ -278,11 +281,14 @@ docs/                       # model-providers guide + ADRs + diagrams
 - [x] **Hybrid retrieval** — dense (pgvector) + sparse (Postgres FTS) fused with RRF
 - [x] **Multi-query rewriting** + **MMR re-ranking** (both dependency-free / zero-key)
 - [x] **Conversational memory** — multi-turn RAG chat threaded by `conversationId`
+- [x] **Persistent chat history** — conversations saved per user (list / continue / new / delete)
 - [x] **File ingest** — PDF / DOCX / HTML / TXT via the Tika reader (`POST /documents/upload`)
+- [x] **In-app document viewer** — read a document's full extracted text
+- [x] **Per-user LLM API keys** — bring-your-own OpenAI / Anthropic keys (encrypted, from Settings)
 - [x] **HS search** — token-aware ranked search over an expanded schedule
 - [x] **Single `docker compose up`** — web + API + pgvector + Adminer, zero-key by default
-- [ ] **Cross-encoder re-ranker** — swap the MMR reranker for a hosted rerank model
-- [ ] **Deploy target** — Fly.io / Railway one-click
+- [x] **Cross-encoder re-ranker** — `MmrReranker` (default) or hosted Cohere Rerank via `RAG_RERANKER=cohere`
+- [x] **Deploy config** — [`fly.toml`](./fly.toml) + [`docs/deployment.md`](./docs/deployment.md) (Fly.io / Railway)
 
 ## 🤝 Contributing
 

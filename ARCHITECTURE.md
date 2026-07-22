@@ -608,10 +608,18 @@ the scaffold intended (all dependency-free / zero-API-key):
 6. **MCP Prompts & Resources.** `TradeFinancePrompts` (`@McpPrompt`) and
    `DocumentResources` (`@McpResource`: `cargo://documents`,
    `cargo://documents/{id}`), auto-registered by Spring AI's annotation scanner.
+7. **Persistent chat history.** `conversations` + `chat_messages` (V3), scoped
+   per user; `ChatMemoryPort` is DB-backed (`PersistentChatMemory`) so multi-turn
+   memory survives restarts and feeds the chat-history UI.
+8. **Per-user API keys.** `user_api_keys` (V4), AES-GCM encrypted
+   (`SecretCipherPort`); the query flow builds an OpenAI/Anthropic model on the
+   caller's own key. Never returned by the API.
+9. **Hosted cross-encoder reranker.** `CohereReranker` (Cohere Rerank v2) behind
+   the same `RerankerPort`, selected with `cargoiq.rag.reranker=cohere`; `MmrReranker`
+   stays the zero-key default.
+10. **Deploy.** [`fly.toml`](fly.toml) + [`docs/deployment.md`](docs/deployment.md)
+    (Fly.io and Railway); the stack already runs from one `docker compose up`.
 
-**Remaining:**
-
-- **Hosted cross-encoder reranker.** Swap `MmrReranker` for a Cohere/bge-reranker
-  adapter behind the same `RerankerPort`.
-- **Deploy.** A container target (Fly.io / Railway) with a small seed corpus.
-  (The whole stack already runs from a single `docker compose up`.)
+The architecture held: every one of these landed as a new adapter behind an
+existing or new port, with the domain and application layers essentially
+untouched — which was the whole point.

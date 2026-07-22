@@ -2,6 +2,7 @@ package io.cargoiq.adapter.out.ai;
 
 import io.cargoiq.application.port.out.RerankerPort;
 import io.cargoiq.domain.model.Citation;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -26,9 +27,14 @@ import java.util.Set;
  * window. Each returned citation's {@code score} is set to its query relevance
  * so the UI can show a meaningful, comparable number.
  *
+ * <p>Active by default. Set {@code cargoiq.rag.reranker=cohere} to swap in the
+ * hosted cross-encoder ({@link CohereReranker}) instead — same {@link RerankerPort},
+ * one adapter changed, no service edits.
+ *
  * @author Vishal Dogra
  */
 @Component
+@ConditionalOnProperty(name = "cargoiq.rag.reranker", havingValue = "mmr", matchIfMissing = true)
 public class MmrReranker implements RerankerPort {
 
     /** Relevance-vs-diversity trade-off. 0.7 leans toward relevance. */
