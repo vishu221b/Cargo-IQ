@@ -27,16 +27,58 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    # Self-contained, ZERO-API-KEY defaults so `docker compose up` just works
+    # offline: the built-in mock chat + mock embedding, no external model server.
+    # These are set literally (not interpolated from the repo .env) on purpose —
+    # the stack must not depend on a developer's local Ollama/OpenAI setup.
+    #
+    # To use a real provider instead, change AI_CHAT_PROVIDER / AI_EMBEDDING_PROVIDER
+    # here (+ add the matching key) and set VECTOR_DIMENSIONS to that embedding
+    # model's width (OpenAI 3-small=1536, Gemini/Ollama=768) — then recreate the
+    # stack with `docker compose down -v` so pgvector re-inits at the new width.
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      AI_CHAT_PROVIDER: mock
+      AI_EMBEDDING_PROVIDER: none
+      VECTOR_DIMENSIONS: "1536"
       POSTGRES_URL: jdbc:postgresql://postgres:5432/cargoiq
       POSTGRES_USER: cargoiq
       POSTGRES_PASSWORD: cargoiq
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-gpt-4o-mini}
-      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    # Exposed for direct API / Swagger / MCP access; the SPA reaches it via nginx.
     ports:
       - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cargoiq-web
+    depends_on:
+      app:
+        condition: service_started
+    # nginx serves the SPA and reverse-proxies /api, /mcp, /actuator, /swagger to `app`.
+    ports:
+      - "3000:80"
+
+  adminer:
+    # Lightweight browser DB client for inspecting the `documents` and
+    # `vector_store` tables. Open http://localhost:8081 (server: postgres).
+    image: adminer:4
+    container_name: cargoiq-adminer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: dracula
+    ports:
+      - "8081:8080"
 
 volumes:
   cargoiq-pgdata:

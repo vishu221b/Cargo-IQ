@@ -55,12 +55,14 @@ public class HsCodeReferenceData implements ReferenceDataPort {
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank() || line.startsWith("#")) continue;
                 if (header) { header = false; continue; }
-                String[] parts = line.split(",", 3);
-                if (parts.length < 3) continue;
+                // Descriptions are quoted and often contain commas, so a naive
+                // split(",") mis-slices them — parse the quoted CSV properly.
+                List<String> parts = splitCsvLine(line);
+                if (parts.size() < 3) continue;
                 try {
-                    var code = new HsCode(parts[0].trim(),
-                            parts[1].trim().replace("\"", ""),
-                            parts[2].trim());
+                    var code = new HsCode(parts.get(0).trim(),
+                            parts.get(1).trim(),
+                            parts.get(2).trim());
                     byCode.put(code.code(), code);
                     all.add(code);
                     loaded++;
@@ -70,6 +72,37 @@ public class HsCodeReferenceData implements ReferenceDataPort {
             }
             log.info("Loaded {} HS codes from {}", loaded, RESOURCE_PATH);
         }
+    }
+
+    /**
+     * Split a single CSV line into fields, honouring double-quoted fields that
+     * may contain commas, with {@code ""} as an escaped quote. Enough for the
+     * {@code code,description,chapter} schema (and the WCO export shape).
+     */
+    private static List<String> splitCsvLine(String line) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        boolean inQuotes = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (inQuotes) {
+                if (c == '"') {
+                    if (i + 1 < line.length() && line.charAt(i + 1) == '"') { cur.append('"'); i++; }
+                    else inQuotes = false;
+                } else {
+                    cur.append(c);
+                }
+            } else if (c == '"') {
+                inQuotes = true;
+            } else if (c == ',') {
+                fields.add(cur.toString());
+                cur.setLength(0);
+            } else {
+                cur.append(c);
+            }
+        }
+        fields.add(cur.toString());
+        return fields;
     }
 
     @Override

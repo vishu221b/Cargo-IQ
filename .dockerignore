@@ -1,0 +1,12 @@
+# Keep the backend build context tiny → faster `docker build` uploads.
+target
+frontend
+.git
+.github
+.idea
+docs
+sample-corpus
+*.md
+.env
+.env.example
+scripts
