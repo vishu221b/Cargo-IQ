@@ -5,11 +5,14 @@ import io.cargoiq.adapter.in.web.dto.QueryResponse;
 import io.cargoiq.application.port.in.AnswerQueryUseCase;
 import io.cargoiq.application.port.in.LookupHsCodeUseCase;
 import io.cargoiq.application.port.in.LookupIncotermUseCase;
+import io.cargoiq.application.port.in.ManageConversationsUseCase;
 import io.cargoiq.domain.model.HsCode;
 import io.cargoiq.domain.model.Query;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,19 +33,31 @@ public class QueryController {
     private final AnswerQueryUseCase answerQuery;
     private final LookupIncotermUseCase lookupIncoterm;
     private final LookupHsCodeUseCase lookupHsCode;
+    private final ManageConversationsUseCase conversations;
 
     public QueryController(
             AnswerQueryUseCase answerQuery,
             LookupIncotermUseCase lookupIncoterm,
-            LookupHsCodeUseCase lookupHsCode) {
+            LookupHsCodeUseCase lookupHsCode,
+            ManageConversationsUseCase conversations) {
         this.answerQuery = answerQuery;
         this.lookupIncoterm = lookupIncoterm;
         this.lookupHsCode = lookupHsCode;
+        this.conversations = conversations;
     }
 
     @Operation(summary = "Ask a question grounded in the ingested corpus")
     @PostMapping("/query")
-    public QueryResponse ask(@Valid @RequestBody QueryRequest req) {
+    public QueryResponse ask(@Valid @RequestBody QueryRequest req, @AuthenticationPrincipal Jwt jwt) {
+        // When the query threads a conversation, make sure it exists and belongs
+        // to the caller before answering — the answering service then persists
+        // this turn (and reads prior turns) via the DB-backed chat memory.
+        if (req.conversationId() != null && !req.conversationId().isBlank()) {
+            conversations.ensureOwned(
+                    java.util.UUID.fromString(req.conversationId()),
+                    ConversationController.userId(jwt),
+                    req.query());
+        }
         var query = new Query(
                 req.query(),
                 req.topKOrDefault(),

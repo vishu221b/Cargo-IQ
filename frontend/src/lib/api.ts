@@ -151,6 +151,19 @@ export const api = {
       body: JSON.stringify(input),
     }),
 
+  // --- chat history (per user) ---
+  listConversations: () =>
+    request<import("./types").Conversation[]>("/api/v1/conversations"),
+
+  getConversation: (id: string) =>
+    request<import("./types").ConversationDetail>(`/api/v1/conversations/${id}`),
+
+  createConversation: () =>
+    request<import("./types").Conversation>("/api/v1/conversations", { method: "POST" }),
+
+  deleteConversation: (id: string) =>
+    request<void>(`/api/v1/conversations/${id}`, { method: "DELETE" }),
+
   incoterm: (code: string) =>
     request<IncotermDetail>(`/api/v1/incoterms/${encodeURIComponent(code)}`),
 

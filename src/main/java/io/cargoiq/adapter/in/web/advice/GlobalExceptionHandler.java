@@ -1,5 +1,6 @@
 package io.cargoiq.adapter.in.web.advice;
 
+import io.cargoiq.domain.exception.ConversationNotFoundException;
 import io.cargoiq.domain.exception.DocumentNotFoundException;
 import io.cargoiq.domain.exception.HsCodeNotFoundException;
 import io.cargoiq.domain.exception.IncotermNotFoundException;
@@ -32,7 +33,8 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler({IncotermNotFoundException.class, HsCodeNotFoundException.class})
+    @ExceptionHandler({IncotermNotFoundException.class, HsCodeNotFoundException.class,
+            ConversationNotFoundException.class})
     public ProblemDetail referenceMiss(RuntimeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     }
